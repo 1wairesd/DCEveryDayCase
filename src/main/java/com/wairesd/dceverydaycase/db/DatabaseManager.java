@@ -1,9 +1,14 @@
 package com.wairesd.dceverydaycase.db;
 
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
+import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
+
 import java.io.File;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -13,20 +18,20 @@ import java.util.logging.Level;
  */
 public class DatabaseManager {
     private Connection connection;
-    private final JavaPlugin plugin;
+    private final DCEveryDayCaseAddon addon;
 
-    public DatabaseManager(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public DatabaseManager(DCEveryDayCaseAddon addon) {
+        this.addon = addon;
     }
 
     /** Инициализирует базу данных и создаёт таблицу, если её нет */
     public void init() {
         try {
             Class.forName("org.sqlite.JDBC");
-            File databases = new File(plugin.getDataFolder(), "databases");
+            File databases = new File(addon.getDataFolder(), "databases");
             if (!databases.exists()) databases.mkdirs();
             File dbFile = new File(databases, "DCEveryDayCase.db");
-            if (!dbFile.exists()) plugin.getLogger().info("Создаётся база данных: " + dbFile.getAbsolutePath());
+            if (!dbFile.exists()) addon.getLogger().info("Создаётся база данных: " + dbFile.getAbsolutePath());
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("CREATE TABLE IF NOT EXISTS next_claim_times (" +
@@ -34,7 +39,7 @@ public class DatabaseManager {
                         "next_claim_time LONG)");
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Ошибка инициализации БД", e);
+            addon.getLogger().log(Level.SEVERE, "Ошибка инициализации БД", e);
         }
     }
 
@@ -47,7 +52,7 @@ public class DatabaseManager {
                 times.put(rs.getString("player_name"), rs.getLong("next_claim_time"));
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Ошибка загрузки данных", e);
+            addon.getLogger().log(Level.SEVERE, "Ошибка загрузки данных", e);
         }
         return times;
     }
@@ -72,11 +77,11 @@ public class DatabaseManager {
             }
             connection.commit();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения данных", e);
+            addon.getLogger().log(Level.SEVERE, "Ошибка сохранения данных", e);
             try {
                 connection.rollback();
             } catch (SQLException rollbackEx) {
-                plugin.getLogger().log(Level.SEVERE, "Ошибка отката транзакции", rollbackEx);
+                addon.getLogger().log(Level.SEVERE, "Ошибка отката транзакции", rollbackEx);
             }
         }
     }
@@ -87,7 +92,7 @@ public class DatabaseManager {
      * @param callback Код, который будет выполнен в основном потоке после завершения сохранения.
      */
     public void asyncSaveNextClaimTimes(Map<String, Long> times, Runnable callback) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        addon.getDCAPI().getPlatform().getScheduler().async(addon, () -> {
             try {
                 connection.setAutoCommit(false);
                 try (Statement clear = connection.createStatement()) {
@@ -106,17 +111,17 @@ public class DatabaseManager {
                 }
                 connection.commit();
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "Ошибка сохранения данных", e);
+                addon.getLogger().log(Level.SEVERE, "Ошибка сохранения данных", e);
                 try {
                     connection.rollback();
                 } catch (SQLException rollbackEx) {
-                    plugin.getLogger().log(Level.SEVERE, "Ошибка отката транзакции", rollbackEx);
+                    addon.getLogger().log(Level.SEVERE, "Ошибка отката транзакции", rollbackEx);
                 }
             } finally {
                 // Выполнить callback в основном потоке
-                Bukkit.getScheduler().runTask(plugin, callback);
+                addon.getDCAPI().getPlatform().getScheduler().run(addon, callback, 0L);
             }
-        });
+        }, 0L);
     }
 
     /** Закрывает соединение с базой данных */
@@ -124,7 +129,7 @@ public class DatabaseManager {
         try {
             if (connection != null && !connection.isClosed()) connection.close();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Ошибка закрытия соединения", e);
+            addon.getLogger().log(Level.SEVERE, "Ошибка закрытия соединения", e);
         }
     }
 }

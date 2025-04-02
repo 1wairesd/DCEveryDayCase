@@ -1,45 +1,42 @@
 package com.wairesd.dceverydaycase.tools;
 
+import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import com.jodexindustries.donatecase.api.DCAPI;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Плейсхолдер для отображения информации о статусе ежедневного кейса.
  */
 public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
-    private final DailyCasePlugin plugin;
-    private final String placeholderAvailable;
-    private final String placeholderRemaining;
+    private final DCEveryDayCaseAddon plugin;
 
-    public DCEveryDayCaseExpansion(DailyCasePlugin plugin, JavaPlugin javaPlugin) {
+    public DCEveryDayCaseExpansion(DCEveryDayCaseAddon plugin) {
         this.plugin = plugin;
-        placeholderAvailable = javaPlugin.getConfig().getString("placeholder.available", "Доступен ежедневный кейс: нажмите для получения");
-        placeholderRemaining = javaPlugin.getConfig().getString("placeholder.remaining", "До получения осталось: $d дн, $h ч, $m мин, $s сек");
     }
 
     @Override
-    public String getIdentifier() {
+    public @NotNull String getIdentifier() {
         return "dceverydaycase";
     }
 
     @Override
-    public String getAuthor() {
+    public @NotNull String getAuthor() {
         return "1wairesd";
     }
 
     @Override
-    public String getVersion() {
-        return "1.0";
+    public @NotNull String getVersion() {
+        return "1.0.0";
     }
 
     /**
      * Возвращает текст плейсхолдера %dceverydaycase_remaining_time%
      */
     @Override
-    public String onPlaceholderRequest(Player player, String params) {
+    public String onPlaceholderRequest(Player player, @NotNull String params) {
         if (!"remaining_time".equalsIgnoreCase(params)) return "";
         if (player == null) return "Информация доступна только для игроков";
 
@@ -49,13 +46,13 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
 
         long currentTime = System.currentTimeMillis();
         int keys = dcapi.getCaseKeyManager().getCache(service.getCaseName(), player.getName());
-        if (keys > 0) return placeholderAvailable;
+        if (keys > 0) return plugin.getConfig().getPlaceholderAvailable();
 
         long nextClaim = service.getNextClaimTimes().computeIfAbsent(player.getName(), n -> currentTime + service.getClaimCooldown());
         if (currentTime >= nextClaim) {
-            return placeholderAvailable;
+            return plugin.getConfig().getPlaceholderAvailable();
         } else {
-            return formatTime(placeholderRemaining, nextClaim - currentTime);
+            return formatTime(plugin.getConfig().getPlaceholderRemaining(), nextClaim - currentTime);
         }
     }
 

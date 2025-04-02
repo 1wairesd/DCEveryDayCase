@@ -2,74 +2,64 @@ package com.wairesd.dceverydaycase;
 
 import com.jodexindustries.donatecase.api.addon.InternalJavaAddon;
 import com.jodexindustries.donatecase.api.DCAPI;
+import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
 import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
 import com.wairesd.dceverydaycase.events.PlayerJoinListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import com.wairesd.dceverydaycase.tools.Config;
 import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
-import com.wairesd.dceverydaycase.tools.DailyCasePlugin;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  * Точка входа плагина. Инициализирует компоненты, регистрирует обработчики событий и плейсхолдер.
  */
-public final class DCEveryDayCaseAddon extends InternalJavaAddon implements DailyCasePlugin {
+public final class DCEveryDayCaseAddon extends InternalJavaAddon {
+
+    private final DCAPI dcapi = DCAPI.getInstance();
+    private final Config config = new Config(this);
+
     private DatabaseManager dbManager;
     private DailyCaseService dailyCaseService;
-    private Map<String, Long> lastClaimTimes = new HashMap<>();
-    private boolean initialized = false;
-    private JavaPlugin donateCasePlugin;
-    private String caseName;
+    private final Plugin donateCasePlugin = BukkitUtils.getDonateCase();
     private final Logger logger = getLogger();
 
     @Override
     public void onLoad() {
-        Config config = new Config(this);
-        caseName = config.getCaseName();
+        config.load();
 
-        donateCasePlugin = (JavaPlugin) Bukkit.getPluginManager().getPlugin("DonateCase");
-        if (donateCasePlugin == null) {
-            logger.severe("Плагин DonateCase не найден!");
-            return;
-        }
-
-        dbManager = new DatabaseManager(donateCasePlugin);
+        dbManager = new DatabaseManager(this);
         dbManager.init();
-        lastClaimTimes = dbManager.loadNextClaimTimes();
+        Map<String, Long> lastClaimTimes = dbManager.loadNextClaimTimes();
 
         long claimCooldown = config.getClaimCooldown();
         int keysAmount = config.getKeysAmount();
         boolean debug = config.isDebug();
 
-        dailyCaseService = new DailyCaseService(donateCasePlugin, DCAPI.getInstance(), lastClaimTimes,
-                claimCooldown, caseName, keysAmount, debug);
-        initialized = true;
+        dailyCaseService = new DailyCaseService(this, DCAPI.getInstance(), lastClaimTimes,
+                claimCooldown, config.getCaseName(), keysAmount, debug);
     }
 
     @Override
     public void onEnable() {
         logger.info("DCEveryDayCaseAddon включён!");
-        if (!initialized || donateCasePlugin == null || !donateCasePlugin.isEnabled()) {
-            logger.severe("Ошибка инициализации или DonateCase не включён!");
-            return;
-        }
 
         // Регистрируем обработчики событий
-        DCAPI.getInstance().getEventBus().register(new OpenCaseListener(dailyCaseService, caseName));
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dailyCaseService, caseName), donateCasePlugin);
+        DCAPI.getInstance().getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName()));
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dailyCaseService, config.getCaseName()), donateCasePlugin);
 
         // Регистрируем плейсхолдер
-        DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this, donateCasePlugin);
-        if (expansion.register()) {
-            logger.info("Placeholder expansion успешно зарегистрирован!");
-        } else {
-            logger.warning("Ошибка регистрации Placeholder expansion!");
+        if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
+            if (expansion.register()) {
+                logger.info("Placeholder expansion успешно зарегистрирован!");
+            } else {
+                logger.warning("Ошибка регистрации Placeholder expansion!");
+            }
         }
         dailyCaseService.startScheduler();
     }
@@ -77,25 +67,25 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Dail
     @Override
     public void onDisable() {
         logger.info("Отключение DCEveryDayCaseAddon...");
-        if (dailyCaseService != null) {
-            dailyCaseService.cancelScheduler();
-        }
+        dailyCaseService.cancelScheduler();
+
         if (dbManager != null) {
             dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
                 dbManager.close();
                 logger.info("Соединение с БД успешно закрыто.");
             });
         }
-        initialized = false;
     }
 
-    @Override
     public DCAPI getDCAPI() {
-        return DCAPI.getInstance();
+        return dcapi;
     }
 
-    @Override
     public DailyCaseService getDailyCaseService() {
         return dailyCaseService;
+    }
+
+    public Config getConfig() {
+        return config;
     }
 }

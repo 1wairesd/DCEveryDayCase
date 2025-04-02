@@ -2,9 +2,9 @@ package com.wairesd.dceverydaycase.events;
 
 import com.jodexindustries.donatecase.api.event.Subscriber;
 import com.jodexindustries.donatecase.api.event.player.OpenCaseEvent;
+import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import net.kyori.event.method.annotation.Subscribe;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -22,9 +22,7 @@ public class OpenCaseListener implements Subscriber {
 
     @Subscribe
     public void onCaseOpen(OpenCaseEvent event) {
-        if (event.player() == null) return;
-        Player player = Bukkit.getPlayer(event.player().getUniqueId());
-        if (player == null) return;
+        Player player = BukkitUtils.toBukkit(event.player());
         if (!event.caseData().caseType().equalsIgnoreCase(targetCaseName)) return;
         int keys = service.getDCAPI().getCaseKeyManager().getCache(targetCaseName, player.getName());
         if (keys == 0) {

@@ -14,16 +14,14 @@ import java.nio.file.Files;
 public class Config {
     private final DCEveryDayCaseAddon plugin;
     private FileConfiguration config;
-    private File configFile;
 
     public Config(DCEveryDayCaseAddon plugin) {
         this.plugin = plugin;
-        load();
     }
 
     /** Загружает конфигурационный файл config.yml */
     public void load() {
-        configFile = new File(plugin.getDataFolder(), "config.yml");
+        File configFile = new File(plugin.getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             plugin.getDataFolder().mkdirs();
             try (InputStream in = plugin.getResource("config.yml")) {

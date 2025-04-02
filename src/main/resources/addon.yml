@@ -5,4 +5,3 @@ main: com.wairesd.dceverydaycase.DCEveryDayCaseAddon
 author: 1wairesd
 description: Плагин для ежедневных кейсов DonateCase
 platforms: [Bukkit]
-depend: [PlaceholderAPI, DonateCase, DCEventManager]

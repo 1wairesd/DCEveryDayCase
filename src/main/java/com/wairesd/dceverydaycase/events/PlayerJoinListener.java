@@ -1,6 +1,5 @@
 package com.wairesd.dceverydaycase.events;
 
-import com.jodexindustries.donatecase.api.DCAPI;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
