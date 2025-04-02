@@ -73,8 +73,4 @@ public class Config {
     public boolean isDebug() {
         return config.getBoolean("debug", false);
     }
-
-    public boolean getBoolean(String ipChecker, boolean b) {
-        return config.getBoolean("ip_checker", false);
-    }
 }
