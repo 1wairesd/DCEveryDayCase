@@ -42,11 +42,13 @@ public class Config {
     }
 
     public String getPlaceholderAvailable() {
-        return config.getString("placeholder.available", "Доступен ежедневный кейс: нажмите для получения");
+        String message = config.getString("placeholder.available", "&7Доступен ежедневный кейс: &aнажмите для получения");
+        return ColorSupport.translate(message);
     }
 
     public String getPlaceholderRemaining() {
-        return config.getString("placeholder.remaining", "До получения осталось: $d дн, $h ч, $m мин, $s сек");
+        String message = config.getString("placeholder.remaining", "&7До получения осталось: &6$d &7дн, &6$h &7ч, &6$m &7мин, &6$s &7сек");
+        return ColorSupport.translate(message);
     }
 
     public String getCaseName() {
