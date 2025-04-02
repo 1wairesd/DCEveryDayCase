@@ -1,0 +1,10 @@
+name: DCEveryDayCase
+version: '6.0'
+main: com.wairesd.dceverydaycase.DCEveryDayCase
+api-version: '1.21'
+author: 1wairesd
+depend: [PlaceholderAPI, DonateCase, DCEveryDayCase]
+commands:
+  dceverydaycase:
+    description: Выдача ежедневного кейса
+    permission: batgift.use
