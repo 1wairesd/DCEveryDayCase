@@ -55,7 +55,7 @@ public class Config {
 
     public int getKeysAmount() {
         try {
-            return Integer.parseInt(config.getString("keys_amout", "1"));
+            return Integer.parseInt(config.getString("keys_amount", "1"));
         } catch (NumberFormatException ex) {
             return 1;
         }
