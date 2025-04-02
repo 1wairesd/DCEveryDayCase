@@ -50,7 +50,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
 
         // Регистрируем обработчики событий
         DCAPI.getInstance().getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName()));
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dailyCaseService, config.getCaseName()), donateCasePlugin);
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dailyCaseService), donateCasePlugin);
 
         // Регистрируем плейсхолдер
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {

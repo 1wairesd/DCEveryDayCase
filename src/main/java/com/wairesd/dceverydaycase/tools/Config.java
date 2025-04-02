@@ -61,6 +61,15 @@ public class Config {
         }
     }
 
+    public String getLogConsoleGiveKeyMessage() {
+        return config.getString("messages.log_console_give_key",
+                "Выдано {key} ключ(ей) игроку {player} для кейса {case}");
+    }
+
+    public String getInfoPlaceholder() {
+        return config.getString("messages.info_placeholder", "Информация доступна только для игроков");
+    }
+
     public boolean isDebug() {
         return config.getBoolean("debug", false);
     }

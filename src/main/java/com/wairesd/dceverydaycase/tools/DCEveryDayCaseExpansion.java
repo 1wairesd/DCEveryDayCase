@@ -38,7 +38,7 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
         if (!"remaining_time".equalsIgnoreCase(params)) return "";
-        if (player == null) return "Информация доступна только для игроков";
+        if (player == null) return plugin.getConfig().getInfoPlaceholder();
 
         DailyCaseService service = plugin.getDailyCaseService();
         DCAPI dcapi = plugin.getDCAPI();

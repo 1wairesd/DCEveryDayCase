@@ -12,11 +12,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
  */
 public class PlayerJoinListener implements Listener {
     private final DailyCaseService service;
-    private final String caseName;
 
-    public PlayerJoinListener(DailyCaseService service, String caseName) {
+    public PlayerJoinListener(DailyCaseService service) {
         this.service = service;
-        this.caseName = caseName;
     }
 
     @EventHandler
@@ -24,7 +22,6 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         if (!service.getNextClaimTimes().containsKey(player.getName())) {
             service.giveGift(player);
-            // Запись не сохраняется, чтобы при следующем открытии кейса запускался таймер
         }
     }
 }

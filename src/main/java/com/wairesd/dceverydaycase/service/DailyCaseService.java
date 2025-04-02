@@ -1,9 +1,9 @@
 package com.wairesd.dceverydaycase.service;
 
 import com.jodexindustries.donatecase.api.DCAPI;
-import com.jodexindustries.donatecase.api.addon.Addon;
 import com.jodexindustries.donatecase.api.data.database.DatabaseStatus;
 import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
+import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  * Сервис по управлению выдачей кейсов и контролю таймаута.
  */
 public class DailyCaseService {
-    private final Addon addon;
+    private final DCEveryDayCaseAddon addon;
     private final DCAPI dcapi;
     private final Map<String, Long> nextClaimTimes;
     private final long claimCooldown;
@@ -24,7 +24,7 @@ public class DailyCaseService {
     private SchedulerTask schedulerTask;
     private final Logger logger;
 
-    public DailyCaseService(Addon addon, DCAPI dcapi, Map<String, Long> nextClaimTimes,
+    public DailyCaseService(DCEveryDayCaseAddon addon, DCAPI dcapi, Map<String, Long> nextClaimTimes,
                             long claimCooldown, String caseName, int keysAmount, boolean debug) {
         this.addon = addon;
         this.dcapi = dcapi;
@@ -60,9 +60,18 @@ public class DailyCaseService {
 
     /** Выдаёт ключ игроку с помощью консольной команды DonateCase */
     public void giveGift(Player player) {
+
         dcapi.getCaseKeyManager().add(caseName, player.getName(), keysAmount).thenAccept(status -> {
-            if (status == DatabaseStatus.COMPLETE && debug)
-                logger.info("Выдано " + keysAmount + " ключ(ей) игроку " + player.getName() + " для кейса " + caseName);
+            if (status == DatabaseStatus.COMPLETE && debug) {
+                String messageTemplate = addon.getConfig().getLogConsoleGiveKeyMessage();
+
+                String message = messageTemplate
+                        .replace("{key}", String.valueOf(keysAmount))
+                        .replace("{player}", player.getName())
+                        .replace("{case}", caseName);
+
+                logger.info(message);
+            }
         });
     }
 
