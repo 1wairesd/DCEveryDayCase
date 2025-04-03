@@ -8,8 +8,8 @@ import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.entity.Player;
 
 /**
- * Обработчик события открытия кейса.
- * При открытии кейса проверяет наличие ключей и обновляет таймер, если ключей нет.
+ * The processor of the case of the case of the case.
+ * When opening the case, it checks the presence of keys and updates the timer if there are no keys.
  */
 public class OpenCaseListener implements Subscriber {
     private final DailyCaseService service;

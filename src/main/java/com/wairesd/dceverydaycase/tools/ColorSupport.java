@@ -4,6 +4,10 @@ import org.bukkit.ChatColor;
 import java.util.regex.Pattern;
 import java.lang.reflect.Method;
 
+/**
+ * Support colors
+ */
+
 public class ColorSupport {
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
     private static final Method CHAT_COLOR_OF;

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * Управление базой данных: создание подключения, таблиц, загрузка и сохранение данных.
+ * Database Management: Creating a connection, tables, downloading and saving data.
  */
 public class DatabaseManager {
     private Connection connection;
@@ -24,14 +24,14 @@ public class DatabaseManager {
         this.addon = addon;
     }
 
-    /** Инициализирует базу данных и создаёт таблицу, если её нет */
+    /** Initializes the database and creates a table if it is not */
     public void init() {
         try {
             Class.forName("org.sqlite.JDBC");
             File databases = new File(addon.getDataFolder(), "databases");
             if (!databases.exists()) databases.mkdirs();
             File dbFile = new File(databases, "DCEveryDayCase.db");
-            if (!dbFile.exists()) addon.getLogger().info("Создаётся база данных: " + dbFile.getAbsolutePath());
+            if (!dbFile.exists()) addon.getLogger().info("The database is created: " + dbFile.getAbsolutePath());
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("CREATE TABLE IF NOT EXISTS next_claim_times (" +
@@ -39,11 +39,11 @@ public class DatabaseManager {
                         "next_claim_time LONG)");
             }
         } catch (Exception e) {
-            addon.getLogger().log(Level.SEVERE, "Ошибка инициализации БД", e);
+            addon.getLogger().log(Level.SEVERE, "The error of initialization of the database", e);
         }
     }
 
-    /** Загружает данные времени следующего получения ключа */
+    /** Loads the data of the next receipt of the key */
     public Map<String, Long> loadNextClaimTimes() {
         Map<String, Long> times = new HashMap<>();
         try (Statement stmt = connection.createStatement();
@@ -52,12 +52,12 @@ public class DatabaseManager {
                 times.put(rs.getString("player_name"), rs.getLong("next_claim_time"));
             }
         } catch (Exception e) {
-            addon.getLogger().log(Level.SEVERE, "Ошибка загрузки данных", e);
+            addon.getLogger().log(Level.SEVERE, "Data loading error", e);
         }
         return times;
     }
 
-    /** Сохраняет данные времени следующего получения ключа синхронно */
+    /** Retains the data of the next receipt of the key synchronously */
     public void saveNextClaimTimes(Map<String, Long> times) {
         try {
             connection.setAutoCommit(false);
@@ -77,19 +77,19 @@ public class DatabaseManager {
             }
             connection.commit();
         } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "Ошибка сохранения данных", e);
+            addon.getLogger().log(Level.SEVERE, "Data conservation error", e);
             try {
                 connection.rollback();
             } catch (SQLException rollbackEx) {
-                addon.getLogger().log(Level.SEVERE, "Ошибка отката транзакции", rollbackEx);
+                addon.getLogger().log(Level.SEVERE, "Transaction rollback error", rollbackEx);
             }
         }
     }
 
     /**
-     * Асинхронно сохраняет данные времени следующего получения ключа и выполняет callback после завершения.
-     * @param times Данные для сохранения.
-     * @param callback Код, который будет выполнен в основном потоке после завершения сохранения.
+     * Asynchronously retains the data of the next receipt of the key and performs Callback after completion.
+     *      * @param Times to save.
+     *      * @param callback code, which will be executed in the main stream after completion of the conservation.
      */
     public void asyncSaveNextClaimTimes(Map<String, Long> times, Runnable callback) {
         addon.getDCAPI().getPlatform().getScheduler().async(addon, () -> {
@@ -111,14 +111,13 @@ public class DatabaseManager {
                 }
                 connection.commit();
             } catch (SQLException e) {
-                addon.getLogger().log(Level.SEVERE, "Ошибка сохранения данных", e);
+                addon.getLogger().log(Level.SEVERE, "Data conservation error", e);
                 try {
                     connection.rollback();
                 } catch (SQLException rollbackEx) {
-                    addon.getLogger().log(Level.SEVERE, "Ошибка отката транзакции", rollbackEx);
+                    addon.getLogger().log(Level.SEVERE, "Transaction rollback error", rollbackEx);
                 }
             } finally {
-                // Выполнить callback в основном потоке
                 addon.getDCAPI().getPlatform().getScheduler().run(addon, callback, 0L);
             }
         }, 0L);
@@ -129,7 +128,7 @@ public class DatabaseManager {
         try {
             if (connection != null && !connection.isClosed()) connection.close();
         } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "Ошибка закрытия соединения", e);
+            addon.getLogger().log(Level.SEVERE, "The error of closing the connection", e);
         }
     }
 }

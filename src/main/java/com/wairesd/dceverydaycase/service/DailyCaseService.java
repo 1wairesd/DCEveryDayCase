@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Сервис по управлению выдачей кейсов и контролю таймаута.
+ * Service for the management of the issuance of cases and control of the time.
  */
 public class DailyCaseService {
     private final DCEveryDayCaseAddon addon;
@@ -36,17 +36,17 @@ public class DailyCaseService {
         this.logger = addon.getLogger();
     }
 
-    /** Запускает планировщик, проверяющий статус игроков каждую секунду */
+    /** launches a planner who checks the status of players every second*/
     public void startScheduler() {
         schedulerTask = dcapi.getPlatform().getScheduler().run(addon, () -> Bukkit.getOnlinePlayers().forEach(DailyCaseService.this::checkPlayer), 0, 20);
     }
 
-    /** Останавливает планировщик */
+    /** stops the planner*/
     public void cancelScheduler() {
         if (schedulerTask != null) schedulerTask.cancel();
     }
 
-    /** Проверяет, можно ли выдать ключ игроку, и выдаёт его, если таймаут истёк */
+    /** checks whether it is possible to issue the key to the player, and gives him out if the timut is expired*/
     private void checkPlayer(Player player) {
         int keys = dcapi.getCaseKeyManager().getCache(caseName, player.getName());
         if (keys > 0) return;
@@ -58,7 +58,7 @@ public class DailyCaseService {
         }
     }
 
-    /** Выдаёт ключ игроку с помощью консольной команды DonateCase */
+    /** issues the key to the player using the console command Donatecase*/
     public void giveGift(Player player) {
 
         dcapi.getCaseKeyManager().add(caseName, player.getName(), keysAmount).thenAccept(status -> {
@@ -75,7 +75,7 @@ public class DailyCaseService {
         });
     }
 
-    /** Обновляет время следующего получения ключа для игрока */
+    /** Updates the next receipt of the key for the player*/
     public void resetTimer(String playerName) {
         nextClaimTimes.put(playerName, System.currentTimeMillis() + claimCooldown);
     }

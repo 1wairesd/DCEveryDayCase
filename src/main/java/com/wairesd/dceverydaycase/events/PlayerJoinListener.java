@@ -7,8 +7,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 /**
- * Обработчик события входа игрока.
- * Если для нового игрока отсутствует запись, производится выдача кейса.
+ * Processor of the player's entrance event.
+ * If there is no record for the new player, the case is issued.
  */
 public class PlayerJoinListener implements Listener {
     private final DailyCaseService service;

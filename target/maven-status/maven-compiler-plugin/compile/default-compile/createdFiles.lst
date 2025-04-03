@@ -1,6 +1,8 @@
+com\wairesd\dceverydaycase\tools\DCEveryDayCaseExpansion.class
 com\wairesd\dceverydaycase\service\DailyCaseService.class
 com\wairesd\dceverydaycase\tools\Config.class
 com\wairesd\dceverydaycase\DCEveryDayCaseAddon.class
 com\wairesd\dceverydaycase\db\DatabaseManager.class
 com\wairesd\dceverydaycase\events\OpenCaseListener.class
 com\wairesd\dceverydaycase\events\PlayerJoinListener.class
+com\wairesd\dceverydaycase\tools\ColorSupport.class

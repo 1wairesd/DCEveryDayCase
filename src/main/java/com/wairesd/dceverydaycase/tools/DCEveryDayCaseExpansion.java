@@ -8,7 +8,7 @@ import com.jodexindustries.donatecase.api.DCAPI;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Плейсхолдер для отображения информации о статусе ежедневного кейса.
+ * PLALISHLEDER to display information about the status of a daily case.
  */
 public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
     private final DCEveryDayCaseAddon plugin;
@@ -33,7 +33,7 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
     }
 
     /**
-     * Возвращает текст плейсхолдера %dceverydaycase_remaining_time%
+     * Returns the text of the PLYSHOLDER %dceverydaycase_remaining_time%
      */
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
@@ -56,7 +56,7 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         }
     }
 
-    /** Форматирует оставшееся время согласно шаблону */
+    /** formates the remaining time according to the template*/
     private String formatTime(String template, long millis) {
         long seconds = millis / 1000;
         long minutes = (seconds / 60) % 60;

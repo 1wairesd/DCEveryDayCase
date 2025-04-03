@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 
 /**
- * Загрузка и предоставление параметров конфигурации плагина.
+ * Loading and providing the parameters of the plugin configuration.
  */
 public class Config {
     private final DCEveryDayCaseAddon plugin;
@@ -19,7 +19,7 @@ public class Config {
         this.plugin = plugin;
     }
 
-    /** Загружает конфигурационный файл config.yml */
+    /** uploads configuration file Config.yml*/
     public void load() {
         File configFile = new File(plugin.getDataFolder(), "config.yml");
         if (!configFile.exists()) {
@@ -42,12 +42,12 @@ public class Config {
     }
 
     public String getPlaceholderAvailable() {
-        String message = config.getString("placeholder.available", "&7Доступен ежедневный кейс: &aнажмите для получения");
+        String message = config.getString("placeholder.available", "&7Daily case is available: &aclick to receive");
         return ColorSupport.translate(message);
     }
 
     public String getPlaceholderRemaining() {
-        String message = config.getString("placeholder.remaining", "&7До получения осталось: &6$d &7дн, &6$h &7ч, &6$m &7мин, &6$s &7сек");
+        String message = config.getString("placeholder.remaining", "&7It remains before receiving: &6$d &7day, &6$h &7hour, &6$m &7min, &6$s &7sec");
         return ColorSupport.translate(message);
     }
 
@@ -65,11 +65,11 @@ public class Config {
 
     public String getLogConsoleGiveKeyMessage() {
         return config.getString("messages.log_console_give_key",
-                "Выдано {key} ключ(ей) игроку {player} для кейса {case}");
+                "Issued {Key} The key (to her) to the player {Player} for the case {CASE}");
     }
 
     public String getInfoPlaceholder() {
-        return config.getString("messages.info_placeholder", "Информация доступна только для игроков");
+        return config.getString("messages.info_placeholder", "Information is available only for players");
     }
 
     public boolean isDebug() {

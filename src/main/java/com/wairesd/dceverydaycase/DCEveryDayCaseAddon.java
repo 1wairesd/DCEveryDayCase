@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Точка входа плагина. Инициализирует компоненты, регистрирует обработчики событий и плейсхолдер.
+ * Plugin entrance point. It initializes components, registers events and player.
  */
 public final class DCEveryDayCaseAddon extends InternalJavaAddon {
 
@@ -46,7 +46,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
 
     @Override
     public void onEnable() {
-        logger.info("DCEveryDayCaseAddon включён!");
+        logger.info("DCEveryDayCaseAddon Included!");
 
         // Регистрируем обработчики событий
         DCAPI.getInstance().getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName()));
@@ -56,9 +56,9 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
             if (expansion.register()) {
-                logger.info("Placeholder expansion успешно зарегистрирован!");
+                logger.info("Placeholder expansion successfully registered!");
             } else {
-                logger.warning("Ошибка регистрации Placeholder expansion!");
+                logger.warning("Placeholder Expansion registration error!");
             }
         }
         dailyCaseService.startScheduler();
@@ -66,13 +66,13 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
 
     @Override
     public void onDisable() {
-        logger.info("Отключение DCEveryDayCaseAddon...");
+        logger.info("Disconnect DCEveryDayCaseAddon...");
         dailyCaseService.cancelScheduler();
 
         if (dbManager != null) {
             dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
                 dbManager.close();
-                logger.info("Соединение с БД успешно закрыто.");
+                logger.info("The connection with the database is successfully closed.");
             });
         }
     }
