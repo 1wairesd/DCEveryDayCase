@@ -1,7 +1,0 @@
-name: DCEveryDayCase
-version: 1.0.0
-api: 2.1.0.0
-main: com.wairesd.dceverydaycase.DCEveryDayCaseAddon
-author: 1wairesd
-description: Плагин для ежедневных кейсов DonateCase
-platforms: [Bukkit]

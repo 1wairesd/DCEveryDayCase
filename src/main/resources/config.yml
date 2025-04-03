@@ -1,14 +1,14 @@
-claim_cooldown: 86400  # 24 часа в секундах
+claim_cooldown: 86400  # 24 hours in seconds
 
 placeholder:
-  available: "Доступен ежедневный кейс: нажмите для получения"
-  remaining: "До получения осталось: $d дн, $h ч, $m мин, $s сек"
+  available: "&7Daily case is available: &aclick to receive"
+  remaining: "&7It remains before receiving: &6$d &7day, &6$h &7hour, &6$m &7min, &6$s &7sec"
 
-case_name: "DCEveryDayCase" # название кейса на который будет выдаваться ключ и на который будет идти проверка ключей
-keys_amount: "1" # сколько ключей за рас после окончания отсчета выдастся
+case_name: "DCEveryDayCase" # the name of the case on which the key will be issued and the key check will be checked
+keys_amount: "1" # how many keys per races after the end of the reference will be far out
 
-debug: false # false or true, будет логировать в консоль только то когда игрокам выдается ключ
+debug: false # false or true, will log into the console only when the players are given the key
 
 messages:
-  log_console_give_key: "Выдано {key} ключ(ей) игроку {player} для кейса {case}"
-  info_placeholder: "Информация доступна только для игроков"
+  log_console_give_key: "Issued {Key} The key (to her) to the player {Player} for the case {CASE}"
+  info_placeholder: "Information is available only for players"
