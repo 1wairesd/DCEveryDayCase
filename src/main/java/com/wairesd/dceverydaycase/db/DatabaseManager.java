@@ -1,134 +1,142 @@
 package com.wairesd.dceverydaycase.db;
 
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
-
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-/**
- * Database Management: Creating a connection, tables, downloading and saving data.
- */
+/** Manages SQLite database connection and operations. */
 public class DatabaseManager {
     private Connection connection;
     private final DCEveryDayCaseAddon addon;
+    private String dbUrl;
 
-    public DatabaseManager(DCEveryDayCaseAddon addon) {
-        this.addon = addon;
-    }
+    public DatabaseManager(DCEveryDayCaseAddon addon) { this.addon = addon; }
 
-    /** Initializes the database and creates a table if it is not */
+    /** Initializes database connection and creates tables if missing. */
     public void init() {
         try {
             Class.forName("org.sqlite.JDBC");
-            File databases = new File(addon.getDataFolder(), "databases");
-            if (!databases.exists()) databases.mkdirs();
-            File dbFile = new File(databases, "DCEveryDayCase.db");
-            if (!dbFile.exists()) addon.getLogger().info("The database is created: " + dbFile.getAbsolutePath());
-            connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+            File dbDir = new File(addon.getDataFolder(), "databases");
+            dbDir.mkdirs();
+            File dbFile = new File(dbDir, "DCEveryDayCase.db");
+            if (!dbFile.exists())
+                addon.getLogger().info("Database created: " + dbFile.getAbsolutePath());
+            dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+            connection = DriverManager.getConnection(dbUrl);
             try (Statement stmt = connection.createStatement()) {
-                stmt.execute("CREATE TABLE IF NOT EXISTS next_claim_times (" +
-                        "player_name TEXT PRIMARY KEY, " +
-                        "next_claim_time LONG)");
+                stmt.execute("CREATE TABLE IF NOT EXISTS next_claim_times (player_name TEXT PRIMARY KEY, next_claim_time LONG)");
+                stmt.execute("CREATE TABLE IF NOT EXISTS notification_status (player_name TEXT PRIMARY KEY, status INTEGER)");
             }
         } catch (Exception e) {
-            addon.getLogger().log(Level.SEVERE, "The error of initialization of the database", e);
+            addon.getLogger().log(Level.SEVERE, "Error initializing database", e);
         }
     }
 
-    /** Loads the data of the next receipt of the key */
+    /** Loads next claim times for all players. */
     public Map<String, Long> loadNextClaimTimes() {
         Map<String, Long> times = new HashMap<>();
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT player_name, next_claim_time FROM next_claim_times")) {
-            while (rs.next()) {
+            while (rs.next())
                 times.put(rs.getString("player_name"), rs.getLong("next_claim_time"));
-            }
         } catch (Exception e) {
-            addon.getLogger().log(Level.SEVERE, "Data loading error", e);
+            addon.getLogger().log(Level.SEVERE, "Error loading data", e);
         }
         return times;
     }
 
-    /** Retains the data of the next receipt of the key synchronously */
+    /** Saves next claim times synchronously with transaction support. */
     public void saveNextClaimTimes(Map<String, Long> times) {
         try {
             connection.setAutoCommit(false);
-            try (Statement clear = connection.createStatement()) {
-                clear.execute("DELETE FROM next_claim_times");
-            }
             try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO next_claim_times (player_name, next_claim_time) VALUES (?, ?)")) {
+                    "INSERT OR REPLACE INTO next_claim_times (player_name, next_claim_time) VALUES (?, ?)")) {
                 times.forEach((player, time) -> {
                     try {
                         ps.setString(1, player);
                         ps.setLong(2, time);
-                        ps.addBatch();
-                    } catch (SQLException ignored) {}
+                        ps.executeUpdate();
+                    } catch (SQLException ex) {
+                        addon.getLogger().log(Level.SEVERE, "Error updating player " + player, ex);
+                    }
                 });
-                ps.executeBatch();
             }
             connection.commit();
         } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "Data conservation error", e);
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                addon.getLogger().log(Level.SEVERE, "Transaction rollback error", rollbackEx);
+            addon.getLogger().log(Level.SEVERE, "Error saving data", e);
+            try { connection.rollback(); } catch (SQLException ex) {
+                addon.getLogger().log(Level.SEVERE, "Rollback error", ex);
+            }
+        } finally {
+            try { connection.setAutoCommit(true); } catch (SQLException ex) {
+                addon.getLogger().log(Level.SEVERE, "Error setting autoCommit", ex);
             }
         }
     }
 
-    /**
-     * Asynchronously retains the data of the next receipt of the key and performs Callback after completion.
-     *      * @param Times to save.
-     *      * @param callback code, which will be executed in the main stream after completion of the conservation.
-     */
+    /** Asynchronously saves next claim times and runs a callback upon completion. */
     public void asyncSaveNextClaimTimes(Map<String, Long> times, Runnable callback) {
         addon.getDCAPI().getPlatform().getScheduler().async(addon, () -> {
-            try {
-                connection.setAutoCommit(false);
-                try (Statement clear = connection.createStatement()) {
-                    clear.execute("DELETE FROM next_claim_times");
-                }
-                try (PreparedStatement ps = connection.prepareStatement(
-                        "INSERT INTO next_claim_times (player_name, next_claim_time) VALUES (?, ?)")) {
+            File dbFile = new File(dbUrl.substring("jdbc:sqlite:".length()));
+            dbFile.getParentFile().mkdirs();
+            try (Connection conn = DriverManager.getConnection(dbUrl)) {
+                conn.setAutoCommit(false);
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT OR REPLACE INTO next_claim_times (player_name, next_claim_time) VALUES (?, ?)")) {
                     times.forEach((player, time) -> {
                         try {
                             ps.setString(1, player);
                             ps.setLong(2, time);
                             ps.addBatch();
-                        } catch (SQLException ignored) {}
+                        } catch (SQLException ex) {
+                            addon.getLogger().log(Level.SEVERE, "Error batching player " + player, ex);
+                        }
                     });
                     ps.executeBatch();
                 }
-                connection.commit();
+                conn.commit();
             } catch (SQLException e) {
-                addon.getLogger().log(Level.SEVERE, "Data conservation error", e);
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    addon.getLogger().log(Level.SEVERE, "Transaction rollback error", rollbackEx);
-                }
+                addon.getLogger().log(Level.SEVERE, "Error saving data asynchronously", e);
             } finally {
                 addon.getDCAPI().getPlatform().getScheduler().run(addon, callback, 0L);
             }
         }, 0L);
     }
 
-    /** Закрывает соединение с базой данных */
+    /** Retrieves the notification status for a given player. */
+    public boolean getNotificationStatus(String playerName) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT status FROM notification_status WHERE player_name = ?")) {
+            ps.setString(1, playerName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("status") == 1;
+            }
+        } catch (SQLException e) {
+            addon.getLogger().log(Level.SEVERE, "Error getting notification status for " + playerName, e);
+        }
+        return false;
+    }
+
+    /** Updates the notification status for a given player. */
+    public void setNotificationStatus(String playerName, boolean status) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "INSERT OR REPLACE INTO notification_status (player_name, status) VALUES (?, ?)")) {
+            ps.setString(1, playerName);
+            ps.setInt(2, status ? 1 : 0);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            addon.getLogger().log(Level.SEVERE, "Error updating notification status for " + playerName, e);
+        }
+    }
+
+    /** Closes the database connection if open. */
     public void close() {
         try {
             if (connection != null && !connection.isClosed()) connection.close();
         } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "The error of closing the connection", e);
+            addon.getLogger().log(Level.SEVERE, "Error closing database connection", e);
         }
     }
 }

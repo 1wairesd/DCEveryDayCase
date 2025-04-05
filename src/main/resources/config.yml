@@ -1,14 +1,33 @@
-claim_cooldown: 86400  # 24 hours in seconds
+# Cooldown period between claims in seconds (86400 seconds = 24 hours)
+claim_cooldown: 86400
 
 placeholder:
+  # Message displayed when the daily case is available for claim
   available: "&7Daily case is available: &aclick to receive"
+  # Message displayed showing the remaining time before the next claim.
+  # Placeholders: $d = days, $h = hours, $m = minutes, $s = seconds.
   remaining: "&7It remains before receiving: &6$d &7day, &6$h &7hour, &6$m &7min, &6$s &7sec"
 
-case_name: "DCEveryDayCase" # the name of the case on which the key will be issued and the key check will be checked
-keys_amount: "1" # how many keys per races after the end of the reference will be far out
+# Case settings:
+# 'case_name' defines the case identifier for key issuance and eligibility checks.
+case_name: "DCEveryDayCase"
 
-debug: false # false or true, will log into the console only when the players are given the key
+# 'keys_amount' defines the number of keys issued per claim.
+keys_amount: "1"
+
+# New player option:
+# - 'timer' : Shows a countdown before a case can be claimed.
+# - 'case'  : Issues the case immediately upon joining.
+new_player_choice: case
+
+# Debug mode:
+# Set to 'true' to enable detailed logging in the console; 'false' to disable.
+debug: false
 
 messages:
   log_console_give_key: "Issued {Key} The key (to her) to the player {Player} for the case {CASE}"
   info_placeholder: "Information is available only for players"
+  case_granted_on: "&aNotifications enabled"
+  case_granted_off: "&cNotifications disabled"
+  only_for_players: "This command is for players only."
+  case_ready: "&aYour daily case is ready!"
