@@ -2,6 +2,7 @@ package com.wairesd.dceverydaycase.service;
 
 import com.jodexindustries.donatecase.api.DCAPI;
 import com.jodexindustries.donatecase.api.data.database.DatabaseStatus;
+import com.jodexindustries.donatecase.api.platform.DCPlayer;
 import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import com.wairesd.dceverydaycase.tools.Color;
@@ -58,7 +59,7 @@ public class DailyCaseService {
         long now = System.currentTimeMillis();
         if (!nextClaimTimes.containsKey(name)) {
             if ("case".equalsIgnoreCase(addon.getConfig().getNewPlayerChoice())) {
-                giveGift(player);
+                giveGift((DCPlayer) player);
                 pendingKeys.add(name);
                 if (addon.getDatabaseManager().getNotificationStatus(name))
                     player.sendMessage(Color.translate(addon.getConfig().getCaseReadyMessage()));
@@ -67,7 +68,7 @@ public class DailyCaseService {
             return;
         }
         if (now >= nextClaimTimes.get(name)) {
-            giveGift(player);
+            giveGift((DCPlayer) player);
             pendingKeys.add(name);
             if (addon.getDatabaseManager().getNotificationStatus(name))
                 player.sendMessage(Color.translate(addon.getConfig().getCaseReadyMessage()));
@@ -75,8 +76,7 @@ public class DailyCaseService {
         }
     }
 
-    /** Issues a gift (case key) to the player and updates next claim time asynchronously. */
-    public void giveGift(Player player) {
+    public void giveGift(DCPlayer player) {
         dcapi.getCaseKeyManager().add(caseName, player.getName(), keysAmount).thenAccept(status -> {
             if (status == DatabaseStatus.COMPLETE && debug) {
                 logger.info(addon.getConfig().getLogConsoleGiveKeyMessage()
@@ -92,6 +92,7 @@ public class DailyCaseService {
             });
         });
     }
+
 
     /** Resets the timer for a player and clears pending status. */
     public void resetTimer(String playerName) {

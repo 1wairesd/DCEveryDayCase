@@ -8,7 +8,6 @@ import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
 import com.wairesd.dceverydaycase.commands.EdcCommand;
 import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
-import com.wairesd.dceverydaycase.events.PlayerJoinListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import com.wairesd.dceverydaycase.tools.Config;
 import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
@@ -43,8 +42,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
     @Override
     public void onEnable() {
         // Register event listeners
-        dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName()));
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(dailyCaseService, this), donateCasePlugin);
+        dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName(), this));
 
         // Register the /edc command
         EdcCommand executor = new EdcCommand(this);
