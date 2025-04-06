@@ -104,7 +104,6 @@ public class DailyCaseService {
         });
     }
 
-
     // Getters
     public Map<String, Long> getNextClaimTimes() { return nextClaimTimes; }
     public long getClaimCooldown() { return claimCooldown; }
