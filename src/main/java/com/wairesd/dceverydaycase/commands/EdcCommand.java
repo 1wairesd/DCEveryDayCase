@@ -4,7 +4,6 @@ import com.jodexindustries.donatecase.api.data.subcommand.*;
 import com.jodexindustries.donatecase.api.platform.*;
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import com.wairesd.dceverydaycase.tools.Color;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
@@ -16,9 +15,9 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
     public EdcCommand(DCEveryDayCaseAddon addon) { this.addon = addon; }
 
     @Override
-    public boolean execute(DCCommandSender sender, @NotNull String label, String[] args) {
+    public boolean execute(@NotNull DCCommandSender sender, @NotNull String label, String[] args) {
         // Ensure the sender is a player and has permission
-        if (!(sender instanceof DCPlayer dp)) {
+        if (!(sender instanceof DCPlayer)) {
             sender.sendMessage(addon.getConfig().node().messages.onlyForPlayersMessage);
             return true;
         }
@@ -27,11 +26,10 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
             return true;
         }
         // Toggle notification status and inform the player
-        Player player = (Player) dp.getHandler();
-        boolean newStatus = !addon.getDatabaseManager().getNotificationStatus(player.getName());
-        addon.getDatabaseManager().setNotificationStatus(player.getName(), newStatus);
+        boolean newStatus = !addon.getDatabaseManager().getNotificationStatus(sender.getName());
+        addon.getDatabaseManager().setNotificationStatus(sender.getName(), newStatus);
         String msg = newStatus ? addon.getConfig().node().messages.caseGrantedOn : addon.getConfig().node().messages.caseGrantedOff;
-        player.sendMessage(Color.translate(msg));
+        sender.sendMessage(Color.translate(msg));
         return true;
     }
 
