@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 public class ConfigMigrator {
 
-
     private final DCEveryDayCaseAddon addon;
     private final Config config;
 
