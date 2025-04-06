@@ -45,4 +45,12 @@ public class Config {
     public ConfigNode node() {
         return configNode;
     }
+
+    public YamlConfigurationLoader getLoader() {
+        return loader;
+    }
+
+    public File getFile() {
+        return file;
+    }
 }

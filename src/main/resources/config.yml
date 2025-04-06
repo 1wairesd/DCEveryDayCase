@@ -1,33 +1,20 @@
-# Cooldown period between claims in seconds (86400 seconds = 24 hours)
-claim_cooldown: 86400
-
-placeholder:
-  # Message displayed when the daily case is available for claim
-  available: "&7Daily case is available: &aclick to receive"
-  # Message displayed showing the remaining time before the next claim.
-  # Placeholders: $d = days, $h = hours, $m = minutes, $s = seconds.
-  remaining: "&7It remains before receiving: &6$d &7day, &6$h &7hour, &6$m &7min, &6$s &7sec"
-
-# Case settings:
-# 'case_name' defines the case identifier for key issuance and eligibility checks.
-case_name: "DCEveryDayCase"
-
-# 'keys_amount' defines the number of keys issued per claim.
-keys_amount: "1"
-
-# New player option:
-# - 'timer' : Shows a countdown before a case can be claimed.
-# - 'case'  : Issues the case immediately upon joining.
-new_player_choice: case
-
-# Debug mode:
-# Set to 'true' to enable detailed logging in the console; 'false' to disable.
-debug: false
-
-messages:
-  log_console_give_key: "Issued {Key} The key (to her) to the player {Player} for the case {CASE}"
-  info_placeholder: "Information is available only for players"
-  case_granted_on: "&aNotifications enabled"
-  case_granted_off: "&cNotifications disabled"
-  only_for_players: "This command is for players only."
-  case_ready: "&aYour daily case is ready!"
+DCEveryDayCase:
+  version: 2
+  case_settings:
+    case_name: DCEveryDayCase
+    keys_amount: 1
+    claim_cooldown: 86400
+    new_player_choice: case
+    turn_off_daily_case_logic: true
+  debug: false
+  placeholder:
+    available: '&7Daily case is available: &aclick to receive'
+    remaining: '&7Time remaining: &6$d days, &6$h hours, &6$m minutes, &6$s seconds'
+  messages:
+    log_console_give_key: 'Issued {key} key to player {player} for case {case}'
+    info_placeholder: 'Information available only for players'
+    case_granted_on: '&aNotifications enabled'
+    case_granted_off: '&cNotifications disabled'
+    only_for_players: 'This command is for players only.'
+    no_permission: '&cYou don''t have permission.'
+    case_ready: '&aYour daily case is ready!'

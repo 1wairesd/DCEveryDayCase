@@ -25,7 +25,8 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
             sender.sendMessage(DCTools.rc(addon.getConfig().node().messages.noPermissionMessage));
             return true;
         }
-        // Toggle notification status and inform the player
+
+        // Toggle the player's notification status and send feedback
         boolean newStatus = !addon.getDatabaseManager().getNotificationStatus(sender.getName());
         addon.getDatabaseManager().setNotificationStatus(sender.getName(), newStatus);
         String msg = newStatus ? addon.getConfig().node().messages.caseGrantedOn : addon.getConfig().node().messages.caseGrantedOff;
@@ -35,6 +36,7 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
 
     @Override
     public List<String> getTabCompletions(@NotNull DCCommandSender sender, @NotNull String label, String[] args) {
+        // Provide tab completion for the "granted" argument
         return args.length == 1 ? Collections.singletonList("granted") : Collections.emptyList();
     }
 }

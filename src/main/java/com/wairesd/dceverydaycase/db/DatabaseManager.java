@@ -7,23 +7,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-/** Manages SQLite database connection and operations. */
 public class DatabaseManager {
     private Connection connection;
     private final DCEveryDayCaseAddon addon;
     private String dbUrl;
 
+    // Constructor to initialize DatabaseManager with the addon instance
     public DatabaseManager(DCEveryDayCaseAddon addon) { this.addon = addon; }
 
-    /** Initializes database connection and creates tables if missing. */
+    /**
+     * Initializes the SQLite database and creates required tables if they don't exist.
+     */
     public void init() {
         try {
             Class.forName("org.sqlite.JDBC");
             File dbDir = new File(addon.getDataFolder(), "databases");
             dbDir.mkdirs();
             File dbFile = new File(dbDir, "DCEveryDayCase.db");
-            if (!dbFile.exists())
-                addon.getLogger().info("Database created: " + dbFile.getAbsolutePath());
+            if (!dbFile.exists()) addon.getLogger().info("Database created: " + dbFile.getAbsolutePath());
             dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
             connection = DriverManager.getConnection(dbUrl);
             try (Statement stmt = connection.createStatement()) {
@@ -35,20 +36,23 @@ public class DatabaseManager {
         }
     }
 
-    /** Loads next claim times for all players. */
+    /**
+     * Loads the next claim times for all players from the database.
+     */
     public Map<String, Long> loadNextClaimTimes() {
         Map<String, Long> times = new HashMap<>();
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT player_name, next_claim_time FROM next_claim_times")) {
-            while (rs.next())
-                times.put(rs.getString("player_name"), rs.getLong("next_claim_time"));
+            while (rs.next()) times.put(rs.getString("player_name"), rs.getLong("next_claim_time"));
         } catch (Exception e) {
             addon.getLogger().log(Level.SEVERE, "Error loading data", e);
         }
         return times;
     }
 
-    /** Saves next claim times synchronously with transaction support. */
+    /**
+     * Saves the next claim times for players to the database.
+     */
     public void saveNextClaimTimes(Map<String, Long> times) {
         try {
             connection.setAutoCommit(false);
@@ -77,7 +81,9 @@ public class DatabaseManager {
         }
     }
 
-    /** Asynchronously saves next claim times and runs a callback upon completion. */
+    /**
+     * Asynchronously saves the next claim times for players.
+     */
     public void asyncSaveNextClaimTimes(Map<String, Long> times, Runnable callback) {
         addon.getDCAPI().getPlatform().getScheduler().async(addon, () -> {
             File dbFile = new File(dbUrl.substring("jdbc:sqlite:".length()));
@@ -106,7 +112,9 @@ public class DatabaseManager {
         }, 0L);
     }
 
-    /** Retrieves the notification status for a given player. */
+    /**
+     * Gets the notification status of a player.
+     */
     public boolean getNotificationStatus(String playerName) {
         try (PreparedStatement ps = connection.prepareStatement("SELECT status FROM notification_status WHERE player_name = ?")) {
             ps.setString(1, playerName);
@@ -119,7 +127,9 @@ public class DatabaseManager {
         return false;
     }
 
-    /** Updates the notification status for a given player. */
+    /**
+     * Sets the notification status of a player.
+     */
     public void setNotificationStatus(String playerName, boolean status) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "INSERT OR REPLACE INTO notification_status (player_name, status) VALUES (?, ?)")) {
@@ -131,12 +141,40 @@ public class DatabaseManager {
         }
     }
 
-    /** Closes the database connection if open. */
+    /**
+     * Closes the database connection safely.
+     */
     public void close() {
         try {
             if (connection != null && !connection.isClosed()) connection.close();
         } catch (SQLException e) {
             addon.getLogger().log(Level.SEVERE, "Error closing database connection", e);
+        }
+    }
+
+    /**
+     * Reloads the database by closing and reopening the connection.
+     */
+    public void reload() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+
+            File dbDir = new File(addon.getDataFolder(), "databases");
+            dbDir.mkdirs();
+            File dbFile = new File(dbDir, "DCEveryDayCase.db");
+            dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+            connection = DriverManager.getConnection(dbUrl);
+
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("CREATE TABLE IF NOT EXISTS next_claim_times (player_name TEXT PRIMARY KEY, next_claim_time LONG)");
+                stmt.execute("CREATE TABLE IF NOT EXISTS notification_status (player_name TEXT PRIMARY KEY, status INTEGER)");
+            }
+
+            addon.getLogger().info("Database reloaded successfully.");
+        } catch (Exception e) {
+            addon.getLogger().log(Level.SEVERE, "Error reloading database", e);
         }
     }
 }
