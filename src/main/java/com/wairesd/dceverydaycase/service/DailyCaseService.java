@@ -3,8 +3,8 @@ package com.wairesd.dceverydaycase.service;
 import com.jodexindustries.donatecase.api.DCAPI;
 import com.jodexindustries.donatecase.api.data.database.DatabaseStatus;
 import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
+import com.jodexindustries.donatecase.api.tools.DCTools;
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
-import com.wairesd.dceverydaycase.tools.Color;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -61,7 +61,7 @@ public class DailyCaseService {
                 giveGift(player.getName());
                 pendingKeys.add(name);
                 if (addon.getDatabaseManager().getNotificationStatus(name))
-                    player.sendMessage(Color.translate(addon.getConfig().node().messages.caseReadyMessage));
+                    player.sendMessage(DCTools.rc(addon.getConfig().node().messages.caseReadyMessage));
             }
             nextClaimTimes.put(name, now + claimCooldown);
             return;
@@ -70,7 +70,7 @@ public class DailyCaseService {
             giveGift(player.getName());
             pendingKeys.add(name);
             if (addon.getDatabaseManager().getNotificationStatus(name))
-                player.sendMessage(Color.translate(addon.getConfig().node().messages.caseReadyMessage));
+                player.sendMessage(DCTools.rc(addon.getConfig().node().messages.caseReadyMessage));
             nextClaimTimes.put(name, now + claimCooldown);
         }
     }
