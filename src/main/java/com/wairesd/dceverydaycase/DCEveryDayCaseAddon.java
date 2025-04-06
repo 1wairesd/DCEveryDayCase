@@ -4,6 +4,7 @@ import com.jodexindustries.donatecase.api.addon.InternalJavaAddon;
 import com.jodexindustries.donatecase.api.DCAPI;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommand;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommandType;
+import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
 import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
 import com.wairesd.dceverydaycase.commands.EdcCommand;
 import com.wairesd.dceverydaycase.db.DatabaseManager;
@@ -28,7 +29,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
     private DailyCaseService dailyCaseService;
     private final Plugin donateCasePlugin = BukkitUtils.getDonateCase();
     private final Logger logger = getLogger();
-    private int saveTaskId;
+    private SchedulerTask saveTask;
 
     @Override
     public void onLoad() {
@@ -74,18 +75,17 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
         dailyCaseService.startScheduler();
 
         // Periodically save claim times to the database
-        saveTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this.getPluginInstance(), () ->
-                dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
-                    if (config.node().debug)
-                        logger.info("Data stored in the database");
-                }), 6000L, 6000L);
+        saveTask = dcapi.getPlatform().getScheduler().run(this, () -> dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
+            if (config.node().debug)
+                logger.info("Data stored in the database");
+        }), 6000L, 6000L);
     }
 
     @Override
     public void onDisable() {
         logger.info("Disabling DCEveryDayCaseAddon...");
         dailyCaseService.cancelScheduler();
-        Bukkit.getScheduler().cancelTask(saveTaskId);
+        dcapi.getPlatform().getScheduler().cancel(saveTask.getTaskId());
         // Save data and close the database connection
         dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
             dbManager.close();

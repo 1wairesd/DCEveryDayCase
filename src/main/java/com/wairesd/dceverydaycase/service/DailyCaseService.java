@@ -2,7 +2,6 @@ package com.wairesd.dceverydaycase.service;
 
 import com.jodexindustries.donatecase.api.DCAPI;
 import com.jodexindustries.donatecase.api.data.database.DatabaseStatus;
-import com.jodexindustries.donatecase.api.platform.DCPlayer;
 import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import com.wairesd.dceverydaycase.tools.Color;
@@ -59,7 +58,7 @@ public class DailyCaseService {
         long now = System.currentTimeMillis();
         if (!nextClaimTimes.containsKey(name)) {
             if ("case".equalsIgnoreCase(addon.getConfig().node().newPlayerChoice)) {
-                giveGift((DCPlayer) player);
+                giveGift(player.getName());
                 pendingKeys.add(name);
                 if (addon.getDatabaseManager().getNotificationStatus(name))
                     player.sendMessage(Color.translate(addon.getConfig().node().messages.caseReadyMessage));
@@ -68,7 +67,7 @@ public class DailyCaseService {
             return;
         }
         if (now >= nextClaimTimes.get(name)) {
-            giveGift((DCPlayer) player);
+            giveGift(player.getName());
             pendingKeys.add(name);
             if (addon.getDatabaseManager().getNotificationStatus(name))
                 player.sendMessage(Color.translate(addon.getConfig().node().messages.caseReadyMessage));
@@ -76,19 +75,19 @@ public class DailyCaseService {
         }
     }
 
-    public void giveGift(DCPlayer player) {
-        dcapi.getCaseKeyManager().add(caseName, player.getName(), keysAmount).thenAccept(status -> {
+    public void giveGift(String player) {
+        dcapi.getCaseKeyManager().add(caseName, player, keysAmount).thenAccept(status -> {
             if (status == DatabaseStatus.COMPLETE && debug) {
                 logger.info(addon.getConfig().node().messages.logConsoleGiveKey
                         .replace("{key}", String.valueOf(keysAmount))
-                        .replace("{player}", player.getName())
+                        .replace("{player}", player)
                         .replace("{case}", caseName));
             }
             long nextTime = System.currentTimeMillis() + claimCooldown;
-            nextClaimTimes.put(player.getName(), nextTime);
+            nextClaimTimes.put(player, nextTime);
             addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
                 if (addon.getConfig().node().debug)
-                    logger.info("Player " + player.getName() + "'s next claim time saved.");
+                    logger.info("Player " + player + "'s next claim time saved.");
             });
         });
     }

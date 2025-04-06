@@ -7,7 +7,6 @@ import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import net.kyori.event.method.annotation.Subscribe;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class OpenCaseListener implements Subscriber {
@@ -25,7 +24,7 @@ public class OpenCaseListener implements Subscriber {
     public void onCaseOpen(OpenCaseEvent event) {
         Player player = BukkitUtils.toBukkit(event.player());
         if (!event.caseData().caseType().equalsIgnoreCase(targetCaseName)) return;
-        Bukkit.getScheduler().runTaskLater(service.getPlugin(), () -> {
+        addon.getDCAPI().getPlatform().getScheduler().run(addon, () -> {
             if (service.getDCAPI().getCaseKeyManager().getCache(targetCaseName, player.getName()) == 0)
                 service.resetTimer(player.getName());
         }, 2L);
@@ -37,7 +36,7 @@ public class OpenCaseListener implements Subscriber {
         if (!service.getNextClaimTimes().containsKey(player.getName())) {
             long nextTime = System.currentTimeMillis() + service.getClaimCooldown();
             if ("case".equalsIgnoreCase(addon.getConfig().node().newPlayerChoice))
-                service.giveGift(player);
+                service.giveGift(player.getName());
             service.getNextClaimTimes().put(player.getName(), nextTime);
             addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
                 if (addon.getConfig().node().debug)
