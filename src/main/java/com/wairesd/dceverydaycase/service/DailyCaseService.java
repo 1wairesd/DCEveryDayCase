@@ -98,7 +98,12 @@ public class DailyCaseService {
     public void resetTimer(String playerName) {
         nextClaimTimes.put(playerName, System.currentTimeMillis() + claimCooldown);
         pendingKeys.remove(playerName);
+        addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
+            if (addon.getConfig().isDebug())
+                logger.info("Player " + playerName + "'s timer reset.");
+        });
     }
+
 
     // Getters
     public Map<String, Long> getNextClaimTimes() { return nextClaimTimes; }
