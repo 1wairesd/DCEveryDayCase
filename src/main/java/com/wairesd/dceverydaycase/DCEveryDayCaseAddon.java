@@ -87,6 +87,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
         dailyCaseService.cancelScheduler();
         dcapi.getPlatform().getScheduler().cancel(saveTask.getTaskId());
         // Save data and close the database connection
+        // TODO Incorrect asynchronous saving when DonateCase is disabled (move to main thread)
         dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
             dbManager.close();
             if (config.node().debug)
