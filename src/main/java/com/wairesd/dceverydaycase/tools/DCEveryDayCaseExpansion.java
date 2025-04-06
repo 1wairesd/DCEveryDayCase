@@ -22,7 +22,7 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         if (!"remaining_time".equalsIgnoreCase(params))
             return "";
         if (player == null)
-            return plugin.getConfig().getInfoPlaceholder();
+            return plugin.getConfig().node().messages.infoPlaceholder;
 
         DailyCaseService service = plugin.getDailyCaseService();
         DCAPI dcapi = plugin.getDCAPI();
@@ -32,10 +32,10 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         long now = System.currentTimeMillis();
         int keys = dcapi.getCaseKeyManager().getCache(service.getCaseName(), player.getName());
         if (keys > 0)
-            return plugin.getConfig().getPlaceholderAvailable();
+            return plugin.getConfig().node().placeholder.available;
         long nextClaim = service.getNextClaimTimes().computeIfAbsent(player.getName(), n -> now + service.getClaimCooldown());
-        return now >= nextClaim ? plugin.getConfig().getPlaceholderAvailable()
-                : formatTime(plugin.getConfig().getPlaceholderRemaining(), nextClaim - now);
+        return now >= nextClaim ? plugin.getConfig().node().placeholder.available
+                : formatTime(plugin.getConfig().node().placeholder.remaining, nextClaim - now);
     }
 
     /** Formats milliseconds into days, hours, minutes and seconds. */

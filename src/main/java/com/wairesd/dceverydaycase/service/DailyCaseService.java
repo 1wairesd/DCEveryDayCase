@@ -58,11 +58,11 @@ public class DailyCaseService {
         if (dcapi.getCaseKeyManager().getCache(caseName, name) > 0) return;
         long now = System.currentTimeMillis();
         if (!nextClaimTimes.containsKey(name)) {
-            if ("case".equalsIgnoreCase(addon.getConfig().getNewPlayerChoice())) {
+            if ("case".equalsIgnoreCase(addon.getConfig().node().newPlayerChoice)) {
                 giveGift((DCPlayer) player);
                 pendingKeys.add(name);
                 if (addon.getDatabaseManager().getNotificationStatus(name))
-                    player.sendMessage(Color.translate(addon.getConfig().getCaseReadyMessage()));
+                    player.sendMessage(Color.translate(addon.getConfig().node().messages.caseReadyMessage));
             }
             nextClaimTimes.put(name, now + claimCooldown);
             return;
@@ -71,7 +71,7 @@ public class DailyCaseService {
             giveGift((DCPlayer) player);
             pendingKeys.add(name);
             if (addon.getDatabaseManager().getNotificationStatus(name))
-                player.sendMessage(Color.translate(addon.getConfig().getCaseReadyMessage()));
+                player.sendMessage(Color.translate(addon.getConfig().node().messages.caseReadyMessage));
             nextClaimTimes.put(name, now + claimCooldown);
         }
     }
@@ -79,7 +79,7 @@ public class DailyCaseService {
     public void giveGift(DCPlayer player) {
         dcapi.getCaseKeyManager().add(caseName, player.getName(), keysAmount).thenAccept(status -> {
             if (status == DatabaseStatus.COMPLETE && debug) {
-                logger.info(addon.getConfig().getLogConsoleGiveKeyMessage()
+                logger.info(addon.getConfig().node().messages.logConsoleGiveKey
                         .replace("{key}", String.valueOf(keysAmount))
                         .replace("{player}", player.getName())
                         .replace("{case}", caseName));
@@ -87,7 +87,7 @@ public class DailyCaseService {
             long nextTime = System.currentTimeMillis() + claimCooldown;
             nextClaimTimes.put(player.getName(), nextTime);
             addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-                if (addon.getConfig().isDebug())
+                if (addon.getConfig().node().debug)
                     logger.info("Player " + player.getName() + "'s next claim time saved.");
             });
         });
@@ -99,7 +99,7 @@ public class DailyCaseService {
         nextClaimTimes.put(playerName, System.currentTimeMillis() + claimCooldown);
         pendingKeys.remove(playerName);
         addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-            if (addon.getConfig().isDebug())
+            if (addon.getConfig().node().debug)
                 logger.info("Player " + playerName + "'s timer reset.");
         });
     }

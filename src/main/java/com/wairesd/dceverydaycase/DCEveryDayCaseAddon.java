@@ -9,10 +9,12 @@ import com.wairesd.dceverydaycase.commands.EdcCommand;
 import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
-import com.wairesd.dceverydaycase.tools.Config;
+import com.wairesd.dceverydaycase.config.Config;
 import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+
+import java.io.File;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -21,7 +23,7 @@ import java.util.logging.Logger;
  */
 public final class DCEveryDayCaseAddon extends InternalJavaAddon {
     private final DCAPI dcapi = DCAPI.getInstance();
-    private final Config config = new Config(this);
+    private final Config config = new Config(new File(getDataFolder(), "config.yml"), this);
     private DatabaseManager dbManager;
     private DailyCaseService dailyCaseService;
     private final Plugin donateCasePlugin = BukkitUtils.getDonateCase();
@@ -36,13 +38,13 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
         Map<String, Long> lastClaimTimes = dbManager.loadNextClaimTimes();
 
         dailyCaseService = new DailyCaseService(this, dcapi, lastClaimTimes,
-                config.getClaimCooldown(), config.getCaseName(), config.getKeysAmount(), config.isDebug());
+                config.node().claimCooldown * 1000, config.node().caseName, config.node().keysAmount, config.node().debug);
     }
 
     @Override
     public void onEnable() {
         // Register event listeners
-        dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName(), this));
+        dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.node().caseName, this));
 
         // Register the /edc command
         EdcCommand executor = new EdcCommand(this);
@@ -74,7 +76,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
         // Periodically save claim times to the database
         saveTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this.getPluginInstance(), () ->
                 dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
-                    if (config.isDebug())
+                    if (config.node().debug)
                         logger.info("Data stored in the database");
                 }), 6000L, 6000L);
     }
@@ -87,7 +89,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon {
         // Save data and close the database connection
         dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
             dbManager.close();
-            if (config.isDebug())
+            if (config.node().debug)
                 logger.info("Database connection closed");
         });
     }

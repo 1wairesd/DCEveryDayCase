@@ -36,11 +36,11 @@ public class OpenCaseListener implements Subscriber {
         var player = event.player();
         if (!service.getNextClaimTimes().containsKey(player.getName())) {
             long nextTime = System.currentTimeMillis() + service.getClaimCooldown();
-            if ("case".equalsIgnoreCase(addon.getConfig().getNewPlayerChoice()))
+            if ("case".equalsIgnoreCase(addon.getConfig().node().newPlayerChoice))
                 service.giveGift(player);
             service.getNextClaimTimes().put(player.getName(), nextTime);
             addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
-                if (addon.getConfig().isDebug())
+                if (addon.getConfig().node().debug)
                     addon.getLogger().info("Next claim times updated in database.");
             });
         }
