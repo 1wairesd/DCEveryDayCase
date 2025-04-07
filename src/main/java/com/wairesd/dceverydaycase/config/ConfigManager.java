@@ -1,9 +1,7 @@
 package com.wairesd.dceverydaycase.config;
 
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
-import com.wairesd.dceverydaycase.config.models.ConfigMetadata;
-import com.wairesd.dceverydaycase.config.models.LanguageMessages;
-import com.wairesd.dceverydaycase.config.models.RootConfig;
+import com.wairesd.dceverydaycase.config.models.*;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.yaml.NodeStyle;
@@ -109,33 +107,63 @@ public class ConfigManager {
      */
     private void loadCurrentLanguage(String lang) {
         if (languageNodes.containsKey(lang)) {
+            // If the tongue is already loaded from the Lang folder, we use it
             currentLanguageMessages = languageNodes.get(lang);
         } else {
-            addon.getLogger().warning("Language " + lang + " not found. Using en_US.");
-            if (!languageNodes.containsKey("en_US")) {
-                // Try to load en_US from resources
-                File enUsFile = new File(langDir, "en_US.yml");
-                try (InputStream is = addon.getClass().getResourceAsStream("/lang/en_US.yml")) {
-                    if (is != null) {
-                        Files.copy(is, enUsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
-                                .nodeStyle(NodeStyle.BLOCK)
-                                .file(enUsFile)
-                                .build();
-                        ConfigurationNode node = loader.load();
-                        LanguageMessages enUsMessages = node.get(LanguageMessages.class, new LanguageMessages());
-                        languageNodes.put("en_US", enUsMessages);
-                        currentLanguageMessages = enUsMessages;
-                    } else {
-                        addon.getLogger().severe("Default language file en_US.yml not found in plugin resources!");
-                        currentLanguageMessages = new LanguageMessages(); // Use empty object
-                    }
-                } catch (IOException e) {
-                    addon.getLogger().log(Level.WARNING, "Error loading default language file", e);
-                    currentLanguageMessages = new LanguageMessages(); // Use empty object
+            // Try to download the specified language from resources
+            File langFile = new File(langDir, lang + ".yml");
+            try (InputStream is = addon.getClass().getResourceAsStream("/lang/" + lang + ".yml")) {
+                if (is != null) {
+                    // If the file is found in resources, copy it to the Lang folder
+                    Files.copy(is, langFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
+                            .nodeStyle(NodeStyle.BLOCK)
+                            .file(langFile)
+                            .build();
+                    ConfigurationNode node = loader.load();
+                    LanguageMessages messages = node.get(LanguageMessages.class, new LanguageMessages());
+                    languageNodes.put(lang, messages);
+                    currentLanguageMessages = messages;
+                    addon.getLogger().info("Language " + lang + " loaded from resources and saved to lang folder.");
+                } else {
+                    // If the specified language is not found in resources, we switch to en_us
+                    addon.getLogger().warning("Language " + lang + " not found in plugin resources. Falling back to en_US.");
+                    loadFallbackLanguage();
                 }
-            } else {
-                currentLanguageMessages = languageNodes.get("en_US");
+            } catch (IOException e) {
+                addon.getLogger().log(Level.WARNING, "Error loading language " + lang + " from resources", e);
+                loadFallbackLanguage();
+            }
+        }
+    }
+
+    /**
+     * Loads the fallback language (en_US) from resources if needed.
+     */
+    private void loadFallbackLanguage() {
+        if (languageNodes.containsKey("en_US")) {
+            currentLanguageMessages = languageNodes.get("en_US");
+        } else {
+            File enUsFile = new File(langDir, "en_US.yml");
+            try (InputStream is = addon.getClass().getResourceAsStream("/lang/en_US.yml")) {
+                if (is != null) {
+                    Files.copy(is, enUsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
+                            .nodeStyle(NodeStyle.BLOCK)
+                            .file(enUsFile)
+                            .build();
+                    ConfigurationNode node = loader.load();
+                    LanguageMessages enUsMessages = node.get(LanguageMessages.class, new LanguageMessages());
+                    languageNodes.put("en_US", enUsMessages);
+                    currentLanguageMessages = enUsMessages;
+                    addon.getLogger().info("Fallback language en_US loaded from resources and saved to lang folder.");
+                } else {
+                    addon.getLogger().severe("Default language file en_US.yml not found in plugin resources!");
+                    currentLanguageMessages = new LanguageMessages(); // Empty object as the last reserve
+                }
+            } catch (IOException e) {
+                addon.getLogger().log(Level.WARNING, "Error loading default language file en_US", e);
+                currentLanguageMessages = new LanguageMessages(); // Empty object as the last reserve
             }
         }
     }
