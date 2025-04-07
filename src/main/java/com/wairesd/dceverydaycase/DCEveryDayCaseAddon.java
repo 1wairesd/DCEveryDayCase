@@ -12,12 +12,11 @@ import com.wairesd.dceverydaycase.commands.EdcCommand;
 import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
-import com.wairesd.dceverydaycase.config.Config;
-import com.wairesd.dceverydaycase.config.ConfigMigrator;
 import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
 import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import com.wairesd.dceverydaycase.config.ConfigManager;
 
 import java.io.File;
 import java.util.Map;
@@ -26,13 +25,12 @@ import java.util.logging.Logger;
 public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subscriber {
     private boolean isPlaceholderRegistered = false;
     private final DCAPI dcapi = DCAPI.getInstance();
-    private final Config config = new Config(new File(getDataFolder(), "config.yml"), this);
+    private final ConfigManager config = new ConfigManager(new File(getDataFolder(), "config.yml"), this);
     private DatabaseManager dbManager;
     private DailyCaseService dailyCaseService;
     private final Plugin donateCasePlugin = BukkitUtils.getDonateCase();
     private final Logger logger = getLogger();
     private SchedulerTask saveTask;
-    private ConfigMigrator ConfigMigrator;
 
     @Override
     public void onLoad() {
@@ -41,25 +39,22 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         dbManager.init();
         Map<String, Long> lastClaimTimes = dbManager.loadNextClaimTimes();
         dailyCaseService = new DailyCaseService(this, dcapi, lastClaimTimes,
-                config.node().claimCooldown * 1000, config.node().caseName, config.node().keysAmount, config.node().debug);
+                config.getClaimCooldown() * 1000, config.getCaseName(), config.getKeysAmount(), config.isDebug());
     }
 
     @Override
     public void onEnable() {
-        ConfigMigrator ConfigMigrator = new ConfigMigrator(this, config);
-        ConfigMigrator.migrateConfig();
-
-        boolean offLogic = config.node().OffLogicDailyCase;
-        String newPlayerChoice = config.node().newPlayerChoice;
+        boolean offLogic = config.isTurnOffDailyCaseLogic();
+        String newPlayerChoice = config.getNewPlayerChoice();
 
         // Skip enabling if daily case logic is off and player choice is timer
         if (offLogic && newPlayerChoice.equalsIgnoreCase("timer")) {
-            logger.warning("Daily case logic is turned off and new player choice is 'timer'. Plugin will not start.");
+            logger.warning("Логика ежедневных кейсов отключена и выбор для новых игроков 'timer'. Плагин не запустится.");
             return;
         }
 
-        logger.info("Starting DCEveryDayCaseAddon...");
-        dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.node().caseName, this));
+        logger.info("Запуск DCEveryDayCaseAddon...");
+        dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName(), this));
 
         EdcCommand executor = new EdcCommand(this);
         SubCommand command = SubCommand.builder()
@@ -68,7 +63,8 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
                 .permission(SubCommandType.PLAYER.permission)
                 .executor(executor)
                 .tabCompleter(executor)
-                .args(new String[]{"(granted)"}).description("Daily case command")
+                .args(new String[]{"(granted)"})
+                .description("Команда ежедневного кейса")
                 .build();
         dcapi.getSubCommandManager().register(command);
 
@@ -84,10 +80,10 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
 
         saveTask = dcapi.getPlatform().getScheduler().run(this, () ->
                 dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
-                    if (config.node().debug) logger.info("Data stored in the database");
+                    if (config.isDebug()) logger.info("Данные сохранены в базе данных");
                 }), 6000L, 6000L);
 
-        logger.info("DCEveryDayCaseAddon Enabled");
+        logger.info("DCEveryDayCaseAddon включен");
 
         // Register the reload event listener
         dcapi.getEventBus().register(this);
@@ -95,53 +91,34 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
 
     @Override
     public void onDisable() {
-        logger.info("Disabling DCEveryDayCaseAddon...");
+        logger.info("Отключение DCEveryDayCaseAddon...");
         dailyCaseService.cancelScheduler();
         if (saveTask != null) dcapi.getPlatform().getScheduler().cancel(saveTask.getTaskId());
         dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
             dbManager.close();
-            if (config.node().debug) logger.info("Database connection closed");
+            if (config.isDebug()) logger.info("Соединение с базой данных закрыто");
         });
     }
 
     @Subscribe
     public void onReload(DonateCaseReloadEvent event) {
-        // Trigger migration when the config is reloaded
-        reloadConfig();
 
-        // Migrate the configuration if needed
-        ConfigMigrator migrator = new ConfigMigrator(this, config);
-        migrator.migrateConfig();  // Run the migration
-
-        // Handle other reload actions (like updating placeholders)
         if (event.type() == DonateCaseReloadEvent.Type.CONFIG) {
             reloadConfig();
         }
 
-        // Update placeholder if needed
-        if (event.type() == DonateCaseReloadEvent.Type.CONFIG) {
-            updatePlaceholder();
-        }
-    }
-
-    /**
-     * Reloads the configuration and updates the placeholder.
-     */
-    private void reloadConfig() {
-        config.load();
-        if (config.node().OffLogicDailyCase) {
-            unregisterPlaceholder();
-        } else {
-            updatePlaceholder();
-        }
     }
 
     /**
      * Reloads the database and daily case service.
      */
-    private void reloadData() {
-        dbManager.reload();
-        dailyCaseService.reload();
+    private void reloadConfig() {
+        config.load();
+        if (config.isTurnOffDailyCaseLogic()) {
+            unregisterPlaceholder();
+        } else {
+            updatePlaceholder();
+        }
     }
 
     /**
@@ -151,10 +128,10 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         if (!isPlaceholderRegistered) {
             DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
             if (expansion.register()) {
-                logger.info("Placeholder expansion registered.");
+                logger.info("Расширение Placeholder зарегистрировано.");
                 isPlaceholderRegistered = true;
             } else {
-                logger.warning("Placeholder expansion registration failed.");
+                logger.warning("Не удалось зарегистрировать расширение Placeholder.");
             }
         }
     }
@@ -166,10 +143,10 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         if (isPlaceholderRegistered) {
             DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
             if (expansion.unregister()) {
-                logger.info("Placeholder expansion unregistered.");
+                logger.info("Расширение Placeholder удалено.");
                 isPlaceholderRegistered = false;
             } else {
-                logger.warning("Placeholder expansion unregistration failed.");
+                logger.warning("Не удалось удалить расширение Placeholder.");
             }
         }
     }
@@ -178,7 +155,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
      * Updates the placeholder based on the current config setting.
      */
     private void updatePlaceholder() {
-        boolean offLogic = config.node().OffLogicDailyCase;
+        boolean offLogic = config.isTurnOffDailyCaseLogic();
         if (offLogic) {
             unregisterPlaceholder();
         } else {
@@ -190,5 +167,5 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
     public DailyCaseService getDailyCaseService() { return dailyCaseService; }
     public Plugin getPluginInstance() { return donateCasePlugin; }
     public DatabaseManager getDatabaseManager() { return dbManager; }
-    public Config getConfig() { return config; }
+    public ConfigManager getConfig() { return config; }
 }

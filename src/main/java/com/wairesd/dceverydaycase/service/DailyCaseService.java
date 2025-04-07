@@ -47,7 +47,7 @@ public class DailyCaseService {
 
     public void checkPlayer(Player player) {
         // Skip if daily case logic is off
-        if (addon.getConfig().node().OffLogicDailyCase) return;
+        if (addon.getConfig().isTurnOffDailyCaseLogic()) return;
 
         String name = player.getName();
 
@@ -69,33 +69,31 @@ public class DailyCaseService {
             pendingKeys.add(name);
             // Send notification to player if enabled
             if (addon.getDatabaseManager().getNotificationStatus(name))
-                player.sendMessage(DCTools.rc(addon.getConfig().node().messages.caseReadyMessage));
+                player.sendMessage(DCTools.rc(addon.getConfig().getCaseReadyMessage()));
             nextClaimTimes.put(name, now + claimCooldown);
         }
     }
 
-
     public void handleNewPlayerCase(Player player, long now) {
         // If the choice for new players is "case", give the gift and send notification
-        if ("case".equalsIgnoreCase(addon.getConfig().node().newPlayerChoice)) {
+        if ("case".equalsIgnoreCase(addon.getConfig().getNewPlayerChoice())) {
             giveGift(player.getName());
             pendingKeys.add(player.getName());
             // Send case ready message if notifications are enabled
             if (addon.getDatabaseManager().getNotificationStatus(player.getName()))
-                player.sendMessage(DCTools.rc(addon.getConfig().node().messages.caseReadyMessage));
+                player.sendMessage(DCTools.rc(addon.getConfig().getCaseReadyMessage()));
         }
 
         // Set the next claim time for the player
         nextClaimTimes.put(player.getName(), now + claimCooldown);
     }
 
-
     public void giveGift(String player) {
         // Add case keys for the player asynchronously
         dcapi.getCaseKeyManager().add(caseName, player, keysAmount).thenAccept(status -> {
             // Log gift action if successful and debugging is enabled
             if (status == DatabaseStatus.COMPLETE && debug) {
-                logger.info(addon.getConfig().node().messages.logConsoleGiveKey
+                logger.info(addon.getConfig().getLogConsoleGiveKey()
                         .replace("{key}", String.valueOf(keysAmount))
                         .replace("{player}", player)
                         .replace("{case}", caseName));
@@ -106,12 +104,11 @@ public class DailyCaseService {
             nextClaimTimes.put(player, nextTime);
             addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
                 // Log confirmation if debugging is enabled
-                if (addon.getConfig().node().debug)
+                if (addon.getConfig().isDebug())
                     logger.info("Player " + player + "'s next claim time saved.");
             });
         });
     }
-
 
     public void resetTimer(String playerName) {
         // Reset the player's next claim time and remove from pending keys
@@ -120,19 +117,17 @@ public class DailyCaseService {
 
         // Save the updated next claim times asynchronously
         addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-            // Log the reset action if debugging is enabled
-            if (addon.getConfig().node().debug)
+            if (addon.getConfig().isDebug())
                 logger.info("Player " + playerName + "'s timer reset.");
         });
     }
 
-
     public void reload() {
         // Reload configuration values
-        this.claimCooldown = addon.getConfig().node().claimCooldown * 1000;
-        this.caseName = addon.getConfig().node().caseName;
-        this.keysAmount = addon.getConfig().node().keysAmount;
-        this.debug = addon.getConfig().node().debug;
+        this.claimCooldown = addon.getConfig().getClaimCooldown() * 1000;
+        this.caseName = addon.getConfig().getCaseName();
+        this.keysAmount = addon.getConfig().getKeysAmount();
+        this.debug = addon.getConfig().isDebug();
 
         // Load and update the player's last claim times
         Map<String, Long> lastClaimTimes = addon.getDatabaseManager().loadNextClaimTimes();

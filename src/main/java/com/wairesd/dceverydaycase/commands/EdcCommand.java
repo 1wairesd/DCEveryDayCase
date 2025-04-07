@@ -18,18 +18,18 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
     public boolean execute(@NotNull DCCommandSender sender, @NotNull String label, String[] args) {
         // Ensure the sender is a player and has permission
         if (!(sender instanceof DCPlayer)) {
-            sender.sendMessage(addon.getConfig().node().messages.onlyForPlayersMessage);
+            sender.sendMessage(addon.getConfig().getOnlyForPlayersMessage());
             return true;
         }
         if (!sender.hasPermission("dc.everydaycase.granted")) {
-            sender.sendMessage(DCTools.rc(addon.getConfig().node().messages.noPermissionMessage));
+            sender.sendMessage(DCTools.rc(addon.getConfig().getNoPermissionMessage()));
             return true;
         }
 
         // Toggle the player's notification status and send feedback
         boolean newStatus = !addon.getDatabaseManager().getNotificationStatus(sender.getName());
         addon.getDatabaseManager().setNotificationStatus(sender.getName(), newStatus);
-        String msg = newStatus ? addon.getConfig().node().messages.caseGrantedOn : addon.getConfig().node().messages.caseGrantedOff;
+        String msg = newStatus ? addon.getConfig().getCaseGrantedOn() : addon.getConfig().getCaseGrantedOff();
         sender.sendMessage(DCTools.rc(msg));
         return true;
     }

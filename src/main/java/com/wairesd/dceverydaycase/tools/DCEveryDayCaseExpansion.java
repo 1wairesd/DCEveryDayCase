@@ -27,18 +27,20 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
         // Skip if daily case logic is off or "timer" is selected for new players
-        if (Boolean.parseBoolean(String.valueOf(plugin.getConfig().node().OffLogicDailyCase))
-                && plugin.getConfig().node().newPlayerChoice.equalsIgnoreCase("timer")) {
+        if (plugin.getConfig().isTurnOffDailyCaseLogic() &&
+                plugin.getConfig().getNewPlayerChoice().equalsIgnoreCase("timer")) {
             return "";
         }
 
         // Return empty if the placeholder is not "remaining_time"
-        if (!"remaining_time".equalsIgnoreCase(params))
+        if (!"remaining_time".equalsIgnoreCase(params)) {
             return "";
+        }
 
         // Handle if player is null or missing service/API
-        if (player == null || plugin.getDailyCaseService() == null || plugin.getDCAPI() == null)
-            return plugin.getConfig().node().messages.infoPlaceholder;
+        if (player == null || plugin.getDailyCaseService() == null || plugin.getDCAPI() == null) {
+            return plugin.getConfig().getInfoPlaceholder();
+        }
 
         // Get available keys and next claim time
         DailyCaseService service = plugin.getDailyCaseService();
@@ -46,13 +48,15 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         long now = System.currentTimeMillis();
         int keys = dcapi.getCaseKeyManager().getCache(service.getCaseName(), player.getName());
 
-        if (keys > 0)
-            return plugin.getConfig().node().placeholder.available;
+        if (keys > 0) {
+            return plugin.getConfig().getAvailable();
+        }
 
         // Calculate remaining time until the next claim
-        long nextClaim = service.getNextClaimTimes().computeIfAbsent(player.getName(), n -> now + service.getClaimCooldown());
-        return now >= nextClaim ? plugin.getConfig().node().placeholder.available
-                : formatTime(plugin.getConfig().node().placeholder.remaining, nextClaim - now);
+        long nextClaim = service.getNextClaimTimes().computeIfAbsent(player.getName(),
+                n -> now + service.getClaimCooldown());
+        return now >= nextClaim ? plugin.getConfig().getAvailable()
+                : formatTime(plugin.getConfig().getRemaining(), nextClaim - now);
     }
 
     // Formats time as days, hours, minutes, seconds

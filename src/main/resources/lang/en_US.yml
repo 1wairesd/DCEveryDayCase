@@ -1,0 +1,10 @@
+available: '&7Daily case is available: &aclick to receive'
+remaining: '&7Time remaining: &6$d &7day, &6$h &7hour, &6$m &7minute, &6$s &7sec'
+
+log_console_give_key: 'Issued {key} key to player {player} for case {case}'
+info_placeholder: 'Information available only for players'
+case_granted_on: '&aNotifications enabled'
+case_granted_off: '&cNotifications disabled'
+only_for_players: 'This command is for players only.'
+no_permission: '&cYou don''t have permission.'
+case_ready: '&aYour daily case is ready!'

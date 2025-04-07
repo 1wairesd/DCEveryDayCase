@@ -36,13 +36,12 @@ public class OpenCaseListener implements Subscriber {
         }, 2L);
     }
 
-
     @Subscribe
     public void onPlayerJoin(JoinEvent event) {
         DCPlayer dcPlayer = event.player();
         Player player = BukkitUtils.toBukkit(dcPlayer);
-        boolean offLogic = addon.getConfig().node().OffLogicDailyCase;
-        String newPlayerChoice = addon.getConfig().node().newPlayerChoice;
+        boolean offLogic = addon.getConfig().isTurnOffDailyCaseLogic();
+        String newPlayerChoice = addon.getConfig().getNewPlayerChoice();
 
         // Logic, if the case is turned off the new selection "timer"
         if (offLogic && "timer".equalsIgnoreCase(newPlayerChoice)) {
@@ -57,7 +56,7 @@ public class OpenCaseListener implements Subscriber {
                 service.giveGift(player.getName()); // We give out the key
                 service.getNextClaimTimes().put(player.getName(), -1L); // set a temporary mark, which means that the key has already been issued
                 addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
-                    if (addon.getConfig().node().debug)
+                    if (addon.getConfig().isDebug())
                         addon.getLogger().info("Next claim times updated in database.");
                 });
             }
@@ -72,7 +71,7 @@ public class OpenCaseListener implements Subscriber {
                 long nextTime = System.currentTimeMillis() + service.getClaimCooldown(); // Timer
                 service.getNextClaimTimes().put(player.getName(), nextTime);
                 addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
-                    if (addon.getConfig().node().debug)
+                    if (addon.getConfig().isDebug())
                         addon.getLogger().info("Next claim times updated in database.");
                 });
             }
@@ -86,7 +85,7 @@ public class OpenCaseListener implements Subscriber {
                 long nextTime = System.currentTimeMillis() + service.getClaimCooldown(); // Timer
                 service.getNextClaimTimes().put(player.getName(), nextTime);
                 addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
-                    if (addon.getConfig().node().debug)
+                    if (addon.getConfig().isDebug())
                         addon.getLogger().info("Next claim times updated in database.");
                 });
             }
