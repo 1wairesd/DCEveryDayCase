@@ -51,37 +51,6 @@ public class DatabaseManager {
     }
 
     /**
-     * Saves the next claim times for players to the database.
-     */
-    public void saveNextClaimTimes(Map<String, Long> times) {
-        try {
-            connection.setAutoCommit(false);
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT OR REPLACE INTO next_claim_times (player_name, next_claim_time) VALUES (?, ?)")) {
-                times.forEach((player, time) -> {
-                    try {
-                        ps.setString(1, player);
-                        ps.setLong(2, time);
-                        ps.executeUpdate();
-                    } catch (SQLException ex) {
-                        addon.getLogger().log(Level.SEVERE, "Error updating player " + player, ex);
-                    }
-                });
-            }
-            connection.commit();
-        } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "Error saving data", e);
-            try { connection.rollback(); } catch (SQLException ex) {
-                addon.getLogger().log(Level.SEVERE, "Rollback error", ex);
-            }
-        } finally {
-            try { connection.setAutoCommit(true); } catch (SQLException ex) {
-                addon.getLogger().log(Level.SEVERE, "Error setting autoCommit", ex);
-            }
-        }
-    }
-
-    /**
      * Asynchronously saves the next claim times for players.
      */
     public void asyncSaveNextClaimTimes(Map<String, Long> times, Runnable callback) {
