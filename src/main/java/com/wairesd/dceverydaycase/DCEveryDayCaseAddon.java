@@ -122,6 +122,14 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
     }
 
     /**
+     * Reloads the database and daily case service.
+     */
+    private void reloadData() {
+        dbManager.reload();
+        dailyCaseService.reload();
+    }
+
+    /**
      * Registers the placeholder if it's not already registered.
      */
     private void registerPlaceholder() {
