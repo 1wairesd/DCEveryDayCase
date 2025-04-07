@@ -49,11 +49,11 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
 
         // Skip enabling if daily case logic is off and player choice is timer
         if (offLogic && newPlayerChoice.equalsIgnoreCase("timer")) {
-            logger.warning("Логика ежедневных кейсов отключена и выбор для новых игроков 'timer'. Плагин не запустится.");
+            logger.warning("The logic of daily cases is also disabled for the new players 'timer'. The plugin will not start.");
             return;
         }
 
-        logger.info("Запуск DCEveryDayCaseAddon...");
+        logger.info("Launch DCEveryDayCaseAddon...");
         dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName(), this));
 
         EdcCommand executor = new EdcCommand(this);
@@ -64,7 +64,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
                 .executor(executor)
                 .tabCompleter(executor)
                 .args(new String[]{"(granted)"})
-                .description("Команда ежедневного кейса")
+                .description("The team of the daily case")
                 .build();
         dcapi.getSubCommandManager().register(command);
 
@@ -80,10 +80,10 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
 
         saveTask = dcapi.getPlatform().getScheduler().run(this, () ->
                 dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
-                    if (config.isDebug()) logger.info("Данные сохранены в базе данных");
+                    if (config.isDebug()) logger.info("Data saved in the database");
                 }), 6000L, 6000L);
 
-        logger.info("DCEveryDayCaseAddon включен");
+        logger.info("DCEveryDayCaseAddon included");
 
         // Register the reload event listener
         dcapi.getEventBus().register(this);
@@ -91,12 +91,12 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
 
     @Override
     public void onDisable() {
-        logger.info("Отключение DCEveryDayCaseAddon...");
+        logger.info("Disconnect DCEveryDayCaseAddon...");
         dailyCaseService.cancelScheduler();
         if (saveTask != null) dcapi.getPlatform().getScheduler().cancel(saveTask.getTaskId());
         dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
             dbManager.close();
-            if (config.isDebug()) logger.info("Соединение с базой данных закрыто");
+            if (config.isDebug()) logger.info("Database connection is closed");
         });
     }
 
@@ -137,10 +137,10 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         if (!isPlaceholderRegistered) {
             DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
             if (expansion.register()) {
-                logger.info("Расширение Placeholder зарегистрировано.");
+                logger.info("Expansion Placeholder is registered.");
                 isPlaceholderRegistered = true;
             } else {
-                logger.warning("Не удалось зарегистрировать расширение Placeholder.");
+                logger.warning("It was not possible to register the extension of PlaceHolder.");
             }
         }
     }
@@ -152,10 +152,10 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         if (isPlaceholderRegistered) {
             DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
             if (expansion.unregister()) {
-                logger.info("Расширение Placeholder удалено.");
+                logger.info("Expansion Placeholder is deleted.");
                 isPlaceholderRegistered = false;
             } else {
-                logger.warning("Не удалось удалить расширение Placeholder.");
+                logger.warning("It was not possible to delete the extension of Placeholder.");
             }
         }
     }
