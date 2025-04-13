@@ -1,1 +1,1 @@
-[DCEveryDayCase]([ссылка](https://www.spigotmc.org/resources/dceverydaycase.123912/))
+[DCEveryDayCase](https://www.spigotmc.org/resources/dceverydaycase.123912/)
