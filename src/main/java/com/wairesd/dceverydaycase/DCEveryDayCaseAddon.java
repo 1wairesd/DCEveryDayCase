@@ -106,7 +106,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         if (event.type() == DonateCaseReloadEvent.Type.CONFIG) {
             reloadConfig();
             reloadData();
-        logger.info("Config reloaded!");
+            logger.info("Config reloaded!");
         }
     }
 
