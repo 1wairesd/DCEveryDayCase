@@ -137,9 +137,6 @@ public class DailyCaseService {
         // Restart the scheduler
         cancelScheduler();
         startScheduler();
-
-        // Log the successful reload
-        addon.getLogger().info("DailyCaseService reloaded successfully.");
     }
 
     public Map<String, Long> getNextClaimTimes() { return nextClaimTimes; }

@@ -140,8 +140,6 @@ public class DatabaseManager {
                 stmt.execute("CREATE TABLE IF NOT EXISTS next_claim_times (player_name TEXT PRIMARY KEY, next_claim_time LONG)");
                 stmt.execute("CREATE TABLE IF NOT EXISTS notification_status (player_name TEXT PRIMARY KEY, status INTEGER)");
             }
-
-            addon.getLogger().info("Database reloaded successfully.");
         } catch (Exception e) {
             addon.getLogger().log(Level.SEVERE, "Error reloading database", e);
         }
