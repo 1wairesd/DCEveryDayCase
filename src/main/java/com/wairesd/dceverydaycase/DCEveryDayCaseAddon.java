@@ -1,14 +1,15 @@
 package com.wairesd.dceverydaycase;
 
-import com.jodexindustries.donatecase.api.addon.InternalJavaAddon;
 import com.jodexindustries.donatecase.api.DCAPI;
+import com.jodexindustries.donatecase.api.addon.InternalJavaAddon;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommand;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommandType;
-import com.jodexindustries.donatecase.api.event.plugin.DonateCaseReloadEvent;
 import com.jodexindustries.donatecase.api.event.Subscriber;
+import com.jodexindustries.donatecase.api.event.plugin.DonateCaseReloadEvent;
 import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
 import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
 import com.wairesd.dceverydaycase.commands.EdcCommand;
+import com.wairesd.dceverydaycase.config.ConfigManager;
 import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
@@ -16,7 +17,6 @@ import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
 import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import com.wairesd.dceverydaycase.config.ConfigManager;
 
 import java.io.File;
 import java.util.Map;
@@ -106,7 +106,7 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         if (event.type() == DonateCaseReloadEvent.Type.CONFIG) {
             reloadConfig();
             reloadData();
-            logger.info("Config reloaded!");
+
         }
     }
 
@@ -172,9 +172,23 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         }
     }
 
-    public DCAPI getDCAPI() { return dcapi; }
-    public DailyCaseService getDailyCaseService() { return dailyCaseService; }
-    public Plugin getPluginInstance() { return donateCasePlugin; }
-    public DatabaseManager getDatabaseManager() { return dbManager; }
-    public ConfigManager getConfig() { return config; }
+    public DCAPI getDCAPI() {
+        return dcapi;
+    }
+
+    public DailyCaseService getDailyCaseService() {
+        return dailyCaseService;
+    }
+
+    public Plugin getPluginInstance() {
+        return donateCasePlugin;
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return dbManager;
+    }
+
+    public ConfigManager getConfig() {
+        return config;
+    }
 }

@@ -1,10 +1,13 @@
 package com.wairesd.dceverydaycase.commands;
 
-import com.jodexindustries.donatecase.api.data.subcommand.*;
-import com.jodexindustries.donatecase.api.platform.*;
+import com.jodexindustries.donatecase.api.data.subcommand.SubCommandExecutor;
+import com.jodexindustries.donatecase.api.data.subcommand.SubCommandTabCompleter;
+import com.jodexindustries.donatecase.api.platform.DCCommandSender;
+import com.jodexindustries.donatecase.api.platform.DCPlayer;
 import com.jodexindustries.donatecase.api.tools.DCTools;
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.Collections;
 import java.util.List;
 

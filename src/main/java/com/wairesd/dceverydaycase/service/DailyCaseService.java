@@ -8,6 +8,7 @@ import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -137,11 +138,28 @@ public class DailyCaseService {
         // Restart the scheduler
         cancelScheduler();
         startScheduler();
+
+        // Log the successful reload
+        addon.getLogger().info("DailyCaseService reloaded successfully.");
     }
 
-    public Map<String, Long> getNextClaimTimes() { return nextClaimTimes; }
-    public long getClaimCooldown() { return claimCooldown; }
-    public Plugin getPlugin() { return addon.getPluginInstance(); }
-    public DCAPI getDCAPI() { return dcapi; }
-    public String getCaseName() { return caseName; }
+    public Map<String, Long> getNextClaimTimes() {
+        return nextClaimTimes;
+    }
+
+    public long getClaimCooldown() {
+        return claimCooldown;
+    }
+
+    public Plugin getPlugin() {
+        return addon.getPluginInstance();
+    }
+
+    public DCAPI getDCAPI() {
+        return dcapi;
+    }
+
+    public String getCaseName() {
+        return caseName;
+    }
 }

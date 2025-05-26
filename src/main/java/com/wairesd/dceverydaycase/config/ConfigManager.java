@@ -1,7 +1,9 @@
 package com.wairesd.dceverydaycase.config;
 
 import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
-import com.wairesd.dceverydaycase.config.models.*;
+import com.wairesd.dceverydaycase.config.models.ConfigMetadata;
+import com.wairesd.dceverydaycase.config.models.LanguageMessages;
+import com.wairesd.dceverydaycase.config.models.RootConfig;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.yaml.NodeStyle;
@@ -169,22 +171,68 @@ public class ConfigManager {
     }
 
     // Getters for settings
-    public long getClaimCooldown() { return rootConfig.dailyCaseSettings.caseSettings.claimCooldown; }
-    public String getCaseName() { return rootConfig.dailyCaseSettings.caseSettings.caseName; }
-    public int getKeysAmount() { return rootConfig.dailyCaseSettings.caseSettings.keysAmount; }
-    public String getNewPlayerChoice() { return rootConfig.dailyCaseSettings.caseSettings.newPlayerChoice; }
-    public boolean isDebug() { return rootConfig.dailyCaseSettings.debug; }
-    public boolean isTurnOffDailyCaseLogic() { return rootConfig.dailyCaseSettings.caseSettings.turnOffDailyCaseLogic; }
-    public String getLanguages() { return rootConfig.dailyCaseSettings.languages; }
+    public long getClaimCooldown() {
+        return rootConfig.dailyCaseSettings.caseSettings.claimCooldown;
+    }
+
+    public String getCaseName() {
+        return rootConfig.dailyCaseSettings.caseSettings.caseName;
+    }
+
+    public int getKeysAmount() {
+        return rootConfig.dailyCaseSettings.caseSettings.keysAmount;
+    }
+
+    public String getNewPlayerChoice() {
+        return rootConfig.dailyCaseSettings.caseSettings.newPlayerChoice;
+    }
+
+    public boolean isDebug() {
+        return rootConfig.dailyCaseSettings.debug;
+    }
+
+    public boolean isTurnOffDailyCaseLogic() {
+        return rootConfig.dailyCaseSettings.caseSettings.turnOffDailyCaseLogic;
+    }
+
+    public String getLanguages() {
+        return rootConfig.dailyCaseSettings.languages;
+    }
 
     // Getters for messages
-    public String getAvailable() { return currentLanguageMessages.available; }
-    public String getRemaining() { return currentLanguageMessages.remaining; }
-    public String getLogConsoleGiveKey() { return currentLanguageMessages.logConsoleGiveKey; }
-    public String getInfoPlaceholder() { return currentLanguageMessages.infoPlaceholder; }
-    public String getCaseGrantedOn() { return currentLanguageMessages.caseGrantedOn; }
-    public String getCaseGrantedOff() { return currentLanguageMessages.caseGrantedOff; }
-    public String getOnlyForPlayersMessage() { return currentLanguageMessages.onlyForPlayersMessage; }
-    public String getNoPermissionMessage() { return currentLanguageMessages.noPermissionMessage; }
-    public String getCaseReadyMessage() { return currentLanguageMessages.caseReadyMessage; }
+    public String getAvailable() {
+        return currentLanguageMessages.available;
+    }
+
+    public String getRemaining() {
+        return currentLanguageMessages.remaining;
+    }
+
+    public String getLogConsoleGiveKey() {
+        return currentLanguageMessages.logConsoleGiveKey;
+    }
+
+    public String getInfoPlaceholder() {
+        return currentLanguageMessages.infoPlaceholder;
+    }
+
+    public String getCaseGrantedOn() {
+        return currentLanguageMessages.caseGrantedOn;
+    }
+
+    public String getCaseGrantedOff() {
+        return currentLanguageMessages.caseGrantedOff;
+    }
+
+    public String getOnlyForPlayersMessage() {
+        return currentLanguageMessages.onlyForPlayersMessage;
+    }
+
+    public String getNoPermissionMessage() {
+        return currentLanguageMessages.noPermissionMessage;
+    }
+
+    public String getCaseReadyMessage() {
+        return currentLanguageMessages.caseReadyMessage;
+    }
 }
