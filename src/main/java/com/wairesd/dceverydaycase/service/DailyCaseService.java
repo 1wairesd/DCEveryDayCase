@@ -12,9 +12,12 @@ import org.bukkit.plugin.Plugin;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DailyCaseService {
+    private final Map<String, Boolean> giftInProgress = new ConcurrentHashMap<>();
     private final DCEveryDayCaseAddon addon;
     private final DCAPI dcapi;
     private final Map<String, Long> nextClaimTimes;
@@ -50,7 +53,7 @@ public class DailyCaseService {
 
         String name = player.getName();
 
-        if (pendingKeys.contains(name)) return;
+        if (giftInProgress.getOrDefault(name, false)) return;
         if (dcapi.getCaseKeyManager().getCache(caseName, name) > 0) return;
 
         long now = System.currentTimeMillis();
@@ -61,11 +64,11 @@ public class DailyCaseService {
         }
 
         if (now >= nextClaimTimes.get(name)) {
+            giftInProgress.put(name, true);
             giveGift(name);
             pendingKeys.add(name);
             if (addon.getDatabaseManager().getNotificationStatus(name))
                 player.sendMessage(DCTools.rc(addon.getConfig().getCaseReadyMessage()));
-            nextClaimTimes.put(name, now + claimCooldown);
         }
     }
 
@@ -95,6 +98,11 @@ public class DailyCaseService {
                 if (addon.getConfig().isDebug())
                     logger.info("Player " + player + "'s next claim time saved.");
             });
+            giftInProgress.remove(player);
+        }).exceptionally(ex -> {
+            logger.log(Level.SEVERE, "Error giving gift to " + player, ex);
+            giftInProgress.remove(player);
+            return null;
         });
     }
 
