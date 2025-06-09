@@ -18,9 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-/**
- * Manages the loading and reloading of configuration and language files for the DCEveryDayCase addon.
- */
 public class ConfigManager {
     private final DCEveryDayCaseAddon addon;
     private final File configFile;
@@ -37,20 +34,13 @@ public class ConfigManager {
         if (!langDir.exists()) langDir.mkdirs();
     }
 
-    /**
-     * Loads the configuration file if it doesn't exist and triggers a reload.
-     */
     public void load() {
         if (!configFile.exists()) addon.saveResource(configFile.getName(), false);
         reload();
     }
 
-    /**
-     * Reloads the main configuration and language files.
-     */
     public void reload() {
         try {
-            // Load the main configuration file
             YamlConfigurationLoader configLoader = YamlConfigurationLoader.builder()
                     .nodeStyle(NodeStyle.BLOCK)
                     .file(configFile)
@@ -58,7 +48,6 @@ public class ConfigManager {
             ConfigurationNode root = configLoader.load();
             this.rootConfig = root.get(RootConfig.class, new RootConfig());
 
-            // Set the config metadata if it's missing
             if (rootConfig.configMetadata == null || rootConfig.configMetadata.version == 0) {
                 rootConfig.configMetadata = new ConfigMetadata();
                 rootConfig.configMetadata.version = 1;
@@ -66,24 +55,18 @@ public class ConfigManager {
                 configLoader.save(root);
             }
 
-            // Reload all language files
             loadAllLanguages();
 
-            // Load the current selected language
             loadCurrentLanguage(rootConfig.dailyCaseSettings.languages);
         } catch (ConfigurateException e) {
             addon.getLogger().log(Level.WARNING, "Error reloading configuration", e);
         }
     }
 
-    /**
-     * Loads all language files from the lang directory.
-     */
     private void loadAllLanguages() {
         languageLoaders.clear();
         languageNodes.clear();
 
-        // Scan the lang directory for .yml files
         File[] files = langDir.listFiles((dir, name) -> name.endsWith(".yml"));
         if (files != null) {
             for (File file : files) {
@@ -104,19 +87,13 @@ public class ConfigManager {
         }
     }
 
-    /**
-     * Loads the specified language or falls back to en_US if not found.
-     */
     private void loadCurrentLanguage(String lang) {
         if (languageNodes.containsKey(lang)) {
-            // If the tongue is already loaded from the Lang folder, we use it
             currentLanguageMessages = languageNodes.get(lang);
         } else {
-            // Try to download the specified language from resources
             File langFile = new File(langDir, lang + ".yml");
             try (InputStream is = addon.getClass().getResourceAsStream("/lang/" + lang + ".yml")) {
                 if (is != null) {
-                    // If the file is found in resources, copy it to the Lang folder
                     Files.copy(is, langFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
                             .nodeStyle(NodeStyle.BLOCK)
@@ -128,7 +105,6 @@ public class ConfigManager {
                     currentLanguageMessages = messages;
                     addon.getLogger().info("Language " + lang + " loaded from resources and saved to lang folder.");
                 } else {
-                    // If the specified language is not found in resources, we switch to en_us
                     addon.getLogger().warning("Language " + lang + " not found in plugin resources. Falling back to en_US.");
                     loadFallbackLanguage();
                 }
@@ -139,9 +115,6 @@ public class ConfigManager {
         }
     }
 
-    /**
-     * Loads the fallback language (en_US) from resources if needed.
-     */
     private void loadFallbackLanguage() {
         if (languageNodes.containsKey("en_US")) {
             currentLanguageMessages = languageNodes.get("en_US");
@@ -161,16 +134,15 @@ public class ConfigManager {
                     addon.getLogger().info("Fallback language en_US loaded from resources and saved to lang folder.");
                 } else {
                     addon.getLogger().severe("Default language file en_US.yml not found in plugin resources!");
-                    currentLanguageMessages = new LanguageMessages(); // Empty object as the last reserve
+                    currentLanguageMessages = new LanguageMessages();
                 }
             } catch (IOException e) {
                 addon.getLogger().log(Level.WARNING, "Error loading default language file en_US", e);
-                currentLanguageMessages = new LanguageMessages(); // Empty object as the last reserve
+                currentLanguageMessages = new LanguageMessages();
             }
         }
     }
 
-    // Getters for settings
     public long getClaimCooldown() {
         return rootConfig.dailyCaseSettings.caseSettings.claimCooldown;
     }
@@ -199,7 +171,6 @@ public class ConfigManager {
         return rootConfig.dailyCaseSettings.languages;
     }
 
-    // Getters for messages
     public String getAvailable() {
         return currentLanguageMessages.available;
     }

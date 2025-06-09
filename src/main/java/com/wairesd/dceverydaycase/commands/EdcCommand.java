@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 
-/** Executes the "edc" command to toggle notification status. */
 public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
     private final DCEveryDayCaseAddon addon;
 
@@ -19,7 +18,6 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
 
     @Override
     public boolean execute(@NotNull DCCommandSender sender, @NotNull String label, String[] args) {
-        // Ensure the sender is a player and has permission
         if (!(sender instanceof DCPlayer)) {
             sender.sendMessage(addon.getConfig().getOnlyForPlayersMessage());
             return true;
@@ -29,7 +27,6 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
             return true;
         }
 
-        // Toggle the player's notification status and send feedback
         boolean newStatus = !addon.getDatabaseManager().getNotificationStatus(sender.getName());
         addon.getDatabaseManager().setNotificationStatus(sender.getName(), newStatus);
         String msg = newStatus ? addon.getConfig().getCaseGrantedOn() : addon.getConfig().getCaseGrantedOff();
@@ -39,7 +36,6 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
 
     @Override
     public List<String> getTabCompletions(@NotNull DCCommandSender sender, @NotNull String label, String[] args) {
-        // Provide tab completion for the "granted" argument
         return args.length == 1 ? Collections.singletonList("granted") : Collections.emptyList();
     }
 }

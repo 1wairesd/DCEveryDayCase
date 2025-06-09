@@ -13,12 +13,8 @@ public class DatabaseManager {
     private final DCEveryDayCaseAddon addon;
     private String dbUrl;
 
-    // Constructor to initialize DatabaseManager with the addon instance
     public DatabaseManager(DCEveryDayCaseAddon addon) { this.addon = addon; }
 
-    /**
-     * Initializes the SQLite database and creates required tables if they don't exist.
-     */
     public void init() {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -37,9 +33,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Loads the next claim times for all players from the database.
-     */
     public Map<String, Long> loadNextClaimTimes() {
         Map<String, Long> times = new HashMap<>();
         try (Statement stmt = connection.createStatement();
@@ -51,9 +44,6 @@ public class DatabaseManager {
         return times;
     }
 
-    /**
-     * Asynchronously saves the next claim times for players.
-     */
     public void asyncSaveNextClaimTimes(Map<String, Long> times, Runnable callback) {
         addon.getDCAPI().getPlatform().getScheduler().async(addon, () -> {
             File dbFile = new File(dbUrl.substring("jdbc:sqlite:".length()));
@@ -82,9 +72,6 @@ public class DatabaseManager {
         }, 0L);
     }
 
-    /**
-     * Gets the notification status of a player.
-     */
     public boolean getNotificationStatus(String playerName) {
         try (PreparedStatement ps = connection.prepareStatement("SELECT status FROM notification_status WHERE player_name = ?")) {
             ps.setString(1, playerName);
@@ -97,9 +84,6 @@ public class DatabaseManager {
         return false;
     }
 
-    /**
-     * Sets the notification status of a player.
-     */
     public void setNotificationStatus(String playerName, boolean status) {
         try (PreparedStatement ps = connection.prepareStatement(
                 "INSERT OR REPLACE INTO notification_status (player_name, status) VALUES (?, ?)")) {
@@ -111,9 +95,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Closes the database connection safely.
-     */
     public void close() {
         try {
             if (connection != null && !connection.isClosed()) connection.close();
@@ -122,9 +103,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Reloads the database by closing and reopening the connection.
-     */
     public void reload() {
         try {
             if (connection != null && !connection.isClosed()) {

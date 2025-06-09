@@ -39,7 +39,6 @@ public class DailyCaseService {
     }
 
     public void startScheduler() {
-        // Schedule a task to check all online players every 20 ticks
         schedulerTask = dcapi.getPlatform().getScheduler().run(addon,
                 () -> Bukkit.getOnlinePlayers().forEach(this::checkPlayer), 0, 20);
     }
@@ -47,28 +46,23 @@ public class DailyCaseService {
     public void cancelScheduler() { if (schedulerTask != null) schedulerTask.cancel(); }
 
     public void checkPlayer(Player player) {
-        // Skip if daily case logic is off
         if (addon.getConfig().isTurnOffDailyCaseLogic()) return;
 
         String name = player.getName();
 
-        // Skip if the player already has pending keys or available keys
         if (pendingKeys.contains(name)) return;
         if (dcapi.getCaseKeyManager().getCache(caseName, name) > 0) return;
 
         long now = System.currentTimeMillis();
 
-        // Handle new player (if no next claim time is set)
         if (!nextClaimTimes.containsKey(name)) {
             handleNewPlayerCase(player, now);
             return;
         }
 
-        // If the cooldown is over, give the gift and update claim time
         if (now >= nextClaimTimes.get(name)) {
             giveGift(name);
             pendingKeys.add(name);
-            // Send notification to player if enabled
             if (addon.getDatabaseManager().getNotificationStatus(name))
                 player.sendMessage(DCTools.rc(addon.getConfig().getCaseReadyMessage()));
             nextClaimTimes.put(name, now + claimCooldown);
@@ -76,23 +70,18 @@ public class DailyCaseService {
     }
 
     public void handleNewPlayerCase(Player player, long now) {
-        // If the choice for new players is "case", give the gift and send notification
         if ("case".equalsIgnoreCase(addon.getConfig().getNewPlayerChoice())) {
             giveGift(player.getName());
             pendingKeys.add(player.getName());
-            // Send case ready message if notifications are enabled
             if (addon.getDatabaseManager().getNotificationStatus(player.getName()))
                 player.sendMessage(DCTools.rc(addon.getConfig().getCaseReadyMessage()));
         }
 
-        // Set the next claim time for the player
         nextClaimTimes.put(player.getName(), now + claimCooldown);
     }
 
     public void giveGift(String player) {
-        // Add case keys for the player asynchronously
         dcapi.getCaseKeyManager().add(caseName, player, keysAmount).thenAccept(status -> {
-            // Log gift action if successful and debugging is enabled
             if (status == DatabaseStatus.COMPLETE && debug) {
                 logger.info(addon.getConfig().getLogConsoleGiveKey()
                         .replace("{key}", String.valueOf(keysAmount))
@@ -100,11 +89,9 @@ public class DailyCaseService {
                         .replace("{case}", caseName));
             }
 
-            // Set next claim time and save it asynchronously
             long nextTime = System.currentTimeMillis() + claimCooldown;
             nextClaimTimes.put(player, nextTime);
             addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-                // Log confirmation if debugging is enabled
                 if (addon.getConfig().isDebug())
                     logger.info("Player " + player + "'s next claim time saved.");
             });
@@ -112,11 +99,9 @@ public class DailyCaseService {
     }
 
     public void resetTimer(String playerName) {
-        // Reset the player's next claim time and remove from pending keys
         nextClaimTimes.put(playerName, System.currentTimeMillis() + claimCooldown);
         pendingKeys.remove(playerName);
 
-        // Save the updated next claim times asynchronously
         addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
             if (addon.getConfig().isDebug())
                 logger.info("Player " + playerName + "'s timer reset.");
@@ -124,22 +109,18 @@ public class DailyCaseService {
     }
 
     public void reload() {
-        // Reload configuration values
         this.claimCooldown = addon.getConfig().getClaimCooldown() * 1000;
         this.caseName = addon.getConfig().getCaseName();
         this.keysAmount = addon.getConfig().getKeysAmount();
         this.debug = addon.getConfig().isDebug();
 
-        // Load and update the player's last claim times
         Map<String, Long> lastClaimTimes = addon.getDatabaseManager().loadNextClaimTimes();
         this.nextClaimTimes.clear();
         this.nextClaimTimes.putAll(lastClaimTimes);
 
-        // Restart the scheduler
         cancelScheduler();
         startScheduler();
 
-        // Log the successful reload
         addon.getLogger().info("DailyCaseService reloaded successfully.");
     }
 

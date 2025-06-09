@@ -3,9 +3,6 @@ package com.wairesd.dceverydaycase.config.models;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
 
-/**
- * Represents settings for daily case functionality.
- */
 @ConfigSerializable
 public class CaseSettings {
     @Setting("case_name")

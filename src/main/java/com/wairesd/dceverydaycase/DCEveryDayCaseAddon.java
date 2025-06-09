@@ -47,7 +47,6 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         boolean offLogic = config.isTurnOffDailyCaseLogic();
         String newPlayerChoice = config.getNewPlayerChoice();
 
-        // Skip enabling if daily case logic is off and player choice is timer
         if (offLogic && newPlayerChoice.equalsIgnoreCase("timer")) {
             logger.warning("The logic of daily cases is also disabled for the new players 'timer'. The plugin will not start.");
             return;
@@ -68,12 +67,10 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
                 .build();
         dcapi.getSubCommandManager().register(command);
 
-        // Register PlaceholderAPI if enabled
         if (!offLogic && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             registerPlaceholder();
         }
 
-        // Start the scheduler for the daily case service
         if (!offLogic) {
             dailyCaseService.startScheduler();
         }
@@ -85,7 +82,6 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
 
         logger.info("DCEveryDayCaseAddon included");
 
-        // Register the reload event listener
         dcapi.getEventBus().register(this);
     }
 
@@ -110,9 +106,6 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         }
     }
 
-    /**
-     * Reloads the database and daily case service.
-     */
     private void reloadConfig() {
         config.load();
         if (config.isTurnOffDailyCaseLogic()) {
@@ -122,17 +115,11 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         }
     }
 
-    /**
-     * Reloads the database and daily case service.
-     */
     private void reloadData() {
         dbManager.reload();
         dailyCaseService.reload();
     }
 
-    /**
-     * Registers the placeholder if it's not already registered.
-     */
     private void registerPlaceholder() {
         if (!isPlaceholderRegistered) {
             DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
@@ -145,9 +132,6 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         }
     }
 
-    /**
-     * Unregisters the placeholder if it's registered.
-     */
     private void unregisterPlaceholder() {
         if (isPlaceholderRegistered) {
             DCEveryDayCaseExpansion expansion = new DCEveryDayCaseExpansion(this);
@@ -160,9 +144,6 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         }
     }
 
-    /**
-     * Updates the placeholder based on the current config setting.
-     */
     private void updatePlaceholder() {
         boolean offLogic = config.isTurnOffDailyCaseLogic();
         if (offLogic) {

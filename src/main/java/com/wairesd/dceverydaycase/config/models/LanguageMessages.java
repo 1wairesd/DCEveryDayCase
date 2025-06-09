@@ -3,9 +3,6 @@ package com.wairesd.dceverydaycase.config.models;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
 
-/**
- * Holds messages for a specific language.
- */
 @ConfigSerializable
 public class LanguageMessages {
     @Setting
