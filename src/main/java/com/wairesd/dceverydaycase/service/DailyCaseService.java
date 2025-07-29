@@ -151,4 +151,8 @@ public class DailyCaseService {
     public String getCaseName() {
         return caseName;
     }
+
+    public int getKeysAmount() {
+        return keysAmount;
+    }
 }
