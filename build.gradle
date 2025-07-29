@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
-    compileOnly("com.jodexindustries.donatecase:spigot-api:2.1.0.0")
+    compileOnly("com.jodexindustries.donatecase:spigot-api:2.1.0.5")
     compileOnly("me.clip:placeholderapi:2.11.6")
 }
 
@@ -49,7 +49,7 @@ processResources {
     def props = [version: version]
     inputs.properties props
     filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
+    filesMatching('addon.yml') {
         expand props
     }
 }
