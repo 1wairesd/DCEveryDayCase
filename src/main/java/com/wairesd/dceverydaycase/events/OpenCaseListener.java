@@ -26,7 +26,7 @@ public class OpenCaseListener implements Subscriber {
         DCPlayer dcPlayer = event.player();
         Player player = BukkitUtils.toBukkit(dcPlayer);
 
-        if (!event.caseData().caseType().equalsIgnoreCase(targetCaseName)) return;
+        if (!event.definition().settings().type().equalsIgnoreCase(targetCaseName)) return;
 
         addon.getDCAPI().getPlatform().getScheduler().run(addon, () -> {
             if (service.getDCAPI().getCaseKeyManager().getCache(targetCaseName, player.getName()) == 0)
