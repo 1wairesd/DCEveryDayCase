@@ -171,4 +171,12 @@ public class BootStrap implements Subscriber {
         return dbManager;
     }
 
+    public ConfigManager getConfig() {
+        return config;
+    }
+
+    public DailyCaseService getDailyCaseService() {
+        return dailyCaseService;
+    }
+
 }
