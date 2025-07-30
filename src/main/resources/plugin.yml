@@ -1,0 +1,7 @@
+name: DCEveryDayCase
+version: '${version}'
+main: com.wairesd.dceverydaycase.bootstrap.MainPlugin
+api-version: '1.16'
+
+depend:
+  - DonateCase 

@@ -1,32 +1,38 @@
 package com.wairesd.dceverydaycase.tools;
 
 import com.jodexindustries.donatecase.api.DCAPI;
-import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
+import com.wairesd.dceverydaycase.bootstrap.Main;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
-    private final DCEveryDayCaseAddon plugin;
+    private final Main plugin;
 
-    public DCEveryDayCaseExpansion(DCEveryDayCaseAddon plugin) {
+    public DCEveryDayCaseExpansion(Main plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public @NotNull String getIdentifier() { return "dceverydaycase"; }
+    public @NotNull String getIdentifier() {
+        return "dceverydaycase";
+    }
 
     @Override
-    public @NotNull String getAuthor() { return "1wairesd"; }
+    public @NotNull String getAuthor() {
+        return "1wairesd";
+    }
 
     @Override
-    public @NotNull String getVersion() { return "1.0.0"; }
+    public @NotNull String getVersion() {
+        return "1.0.0";
+    }
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
-        if (plugin.getConfig().isTurnOffDailyCaseLogic() &&
-                plugin.getConfig().getNewPlayerChoice().equalsIgnoreCase("timer")) {
+        if (plugin.getConfigManager().isTurnOffDailyCaseLogic() &&
+                plugin.getConfigManager().getNewPlayerChoice().equalsIgnoreCase("timer")) {
             return "";
         }
 
@@ -35,7 +41,7 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         }
 
         if (player == null || plugin.getDailyCaseService() == null || plugin.getDCAPI() == null) {
-            return plugin.getConfig().getInfoPlaceholder();
+            return plugin.getConfigManager().getInfoPlaceholder();
         }
 
         DailyCaseService service = plugin.getDailyCaseService();
@@ -44,13 +50,13 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         int keys = dcapi.getCaseKeyManager().getCache(service.getCaseName(), player.getName());
 
         if (keys > 0) {
-            return plugin.getConfig().getAvailable();
+            return plugin.getConfigManager().getAvailable();
         }
 
         long nextClaim = service.getNextClaimTimes().computeIfAbsent(player.getName(),
                 n -> now + service.getClaimCooldown());
-        return now >= nextClaim ? plugin.getConfig().getAvailable()
-                : formatTime(plugin.getConfig().getRemaining(), nextClaim - now);
+        return now >= nextClaim ? plugin.getConfigManager().getAvailable()
+                : formatTime(plugin.getConfigManager().getRemaining(), nextClaim - now);
     }
 
     private String formatTime(String template, long millis) {

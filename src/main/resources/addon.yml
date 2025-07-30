@@ -1,7 +1,6 @@
 name: DCEveryDayCase
 version: '${version}'
-api: 2.1.0.5
-main: com.wairesd.dceverydaycase.DCEveryDayCaseAddon
+main: com.wairesd.dceverydaycase.bootstrap.MainAddon
 author: 1wairesd
 description: Plugin for daily cases of Donatecase
 platforms: [Bukkit]

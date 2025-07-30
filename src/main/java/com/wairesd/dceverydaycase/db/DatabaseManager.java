@@ -1,6 +1,6 @@
 package com.wairesd.dceverydaycase.db;
 
-import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
+import com.wairesd.dceverydaycase.bootstrap.Main;
 
 import java.io.File;
 import java.sql.*;
@@ -10,18 +10,18 @@ import java.util.logging.Level;
 
 public class DatabaseManager {
     private Connection connection;
-    private final DCEveryDayCaseAddon addon;
+    private final Main addon;
     private String dbUrl;
 
-    public DatabaseManager(DCEveryDayCaseAddon addon) { this.addon = addon; }
+    public DatabaseManager(Main addon) { this.addon = addon; }
 
     public void init() {
         try {
             Class.forName("org.sqlite.JDBC");
-            File dbDir = new File(addon.getDataFolder(), "databases");
+            File dbDir = new File(addon.getPlugin().getDataFolder(), "databases");
             dbDir.mkdirs();
             File dbFile = new File(dbDir, "DCEveryDayCase.db");
-            if (!dbFile.exists()) addon.getLogger().info("Database created: " + dbFile.getAbsolutePath());
+            if (!dbFile.exists()) addon.getDCAPI().getPlatform().getLogger().info("Database created: " + dbFile.getAbsolutePath());
             dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
             connection = DriverManager.getConnection(dbUrl);
             try (Statement stmt = connection.createStatement()) {
@@ -29,7 +29,7 @@ public class DatabaseManager {
                 stmt.execute("CREATE TABLE IF NOT EXISTS notification_status (player_name TEXT PRIMARY KEY, status INTEGER)");
             }
         } catch (Exception e) {
-            addon.getLogger().log(Level.SEVERE, "Error initializing database", e);
+            addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error initializing database", e);
         }
     }
 
@@ -39,13 +39,13 @@ public class DatabaseManager {
              ResultSet rs = stmt.executeQuery("SELECT player_name, next_claim_time FROM next_claim_times")) {
             while (rs.next()) times.put(rs.getString("player_name"), rs.getLong("next_claim_time"));
         } catch (Exception e) {
-            addon.getLogger().log(Level.SEVERE, "Error loading data", e);
+            addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error loading data", e);
         }
         return times;
     }
 
     public void asyncSaveNextClaimTimes(Map<String, Long> times, Runnable callback) {
-        addon.getDCAPI().getPlatform().getScheduler().async(addon, () -> {
+        addon.getDCAPI().getPlatform().getScheduler().async(addon.getAddon(), () -> {
             File dbFile = new File(dbUrl.substring("jdbc:sqlite:".length()));
             dbFile.getParentFile().mkdirs();
             try (Connection conn = DriverManager.getConnection(dbUrl)) {
@@ -58,16 +58,16 @@ public class DatabaseManager {
                             ps.setLong(2, time);
                             ps.addBatch();
                         } catch (SQLException ex) {
-                            addon.getLogger().log(Level.SEVERE, "Error batching player " + player, ex);
+                            addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error batching player " + player, ex);
                         }
                     });
                     ps.executeBatch();
                 }
                 conn.commit();
             } catch (SQLException e) {
-                addon.getLogger().log(Level.SEVERE, "Error saving data asynchronously", e);
+                addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error saving data asynchronously", e);
             } finally {
-                addon.getDCAPI().getPlatform().getScheduler().run(addon, callback, 0L);
+                addon.getDCAPI().getPlatform().getScheduler().run(addon.getAddon(), callback, 0L);
             }
         }, 0L);
     }
@@ -79,7 +79,7 @@ public class DatabaseManager {
                 if (rs.next()) return rs.getInt("status") == 1;
             }
         } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "Error getting notification status for " + playerName, e);
+            addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error getting notification status for " + playerName, e);
         }
         return false;
     }
@@ -91,7 +91,7 @@ public class DatabaseManager {
             ps.setInt(2, status ? 1 : 0);
             ps.executeUpdate();
         } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "Error updating notification status for " + playerName, e);
+            addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error updating notification status for " + playerName, e);
         }
     }
 
@@ -99,7 +99,7 @@ public class DatabaseManager {
         try {
             if (connection != null && !connection.isClosed()) connection.close();
         } catch (SQLException e) {
-            addon.getLogger().log(Level.SEVERE, "Error closing database connection", e);
+            addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error closing database connection", e);
         }
     }
 
@@ -109,7 +109,7 @@ public class DatabaseManager {
                 connection.close();
             }
 
-            File dbDir = new File(addon.getDataFolder(), "databases");
+            File dbDir = new File(addon.getPlugin().getDataFolder(), "databases");
             dbDir.mkdirs();
             File dbFile = new File(dbDir, "DCEveryDayCase.db");
             dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
@@ -120,9 +120,9 @@ public class DatabaseManager {
                 stmt.execute("CREATE TABLE IF NOT EXISTS notification_status (player_name TEXT PRIMARY KEY, status INTEGER)");
             }
 
-            addon.getLogger().info("Database reloaded successfully.");
+            addon.getDCAPI().getPlatform().getLogger().info("Database reloaded successfully.");
         } catch (Exception e) {
-            addon.getLogger().log(Level.SEVERE, "Error reloading database", e);
+            addon.getDCAPI().getPlatform().getLogger().log(Level.SEVERE, "Error reloading database", e);
         }
     }
 }

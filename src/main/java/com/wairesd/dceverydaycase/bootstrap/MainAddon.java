@@ -1,42 +1,40 @@
-package com.wairesd.dceverydaycase;
+package com.wairesd.dceverydaycase.bootstrap;
 
 import com.jodexindustries.donatecase.api.addon.InternalJavaAddon;
-import com.jodexindustries.donatecase.api.event.Subscriber;
-import com.wairesd.dceverydaycase.bootstrap.BootStrap;
-import com.wairesd.dceverydaycase.bootstrap.Main;
+import com.jodexindustries.donatecase.api.manager.CaseManager;
+import org.bukkit.plugin.Plugin;
 
-public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subscriber, Main {
+public class MainAddon extends InternalJavaAddon implements Main {
     private BootStrap bootstrap;
-
-    @Override
-    public void onLoad() {
-        bootstrap = new BootStrap(this);
-        bootstrap.load();
-    }
+    private CaseManager caseManager;
 
     @Override
     public void onEnable() {
+        caseManager = getPlatform().getAPI().getCaseManager();
+        bootstrap = new BootStrap(this);
+        bootstrap.load();
         bootstrap.enable();
     }
 
     @Override
     public void onDisable() {
-        bootstrap.unload();
+        if (bootstrap != null) {
+            bootstrap.unload();
+        }
     }
 
-    // Main interface implementations
     @Override
-    public org.bukkit.plugin.Plugin getPlugin() {
+    public Plugin getPlugin() {
         return com.jodexindustries.donatecase.spigot.tools.BukkitUtils.getDonateCase();
     }
 
     @Override
-    public com.jodexindustries.donatecase.api.manager.CaseManager getCaseManager() {
-        return getPlatform().getAPI().getCaseManager();
+    public CaseManager getCaseManager() {
+        return caseManager;
     }
 
     @Override
-    public org.bukkit.plugin.Plugin getPluginInstance() {
+    public Plugin getPluginInstance() {
         return com.jodexindustries.donatecase.spigot.tools.BukkitUtils.getDonateCase();
     }
 

@@ -4,7 +4,7 @@ import com.jodexindustries.donatecase.api.DCAPI;
 import com.jodexindustries.donatecase.api.data.database.DatabaseStatus;
 import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
 import com.jodexindustries.donatecase.api.tools.DCTools;
-import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
+import com.wairesd.dceverydaycase.bootstrap.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 public class DailyCaseService {
     private final Map<String, Boolean> giftInProgress = new ConcurrentHashMap<>();
-    private final DCEveryDayCaseAddon addon;
+    private final Main addon;
     private final DCAPI dcapi;
     private final Map<String, Long> nextClaimTimes;
     private long claimCooldown;
@@ -29,7 +29,7 @@ public class DailyCaseService {
     public final Set<String> pendingKeys = new HashSet<>();
     private final Logger logger;
 
-    public DailyCaseService(DCEveryDayCaseAddon addon, DCAPI dcapi, Map<String, Long> nextClaimTimes,
+    public DailyCaseService(Main addon, DCAPI dcapi, Map<String, Long> nextClaimTimes,
                             long claimCooldown, String caseName, int keysAmount, boolean debug) {
         this.addon = addon;
         this.dcapi = dcapi;
@@ -38,18 +38,20 @@ public class DailyCaseService {
         this.caseName = caseName;
         this.keysAmount = keysAmount;
         this.debug = debug;
-        this.logger = addon.getLogger();
+        this.logger = dcapi.getPlatform().getLogger();
     }
 
     public void startScheduler() {
-        schedulerTask = dcapi.getPlatform().getScheduler().run(addon,
+        schedulerTask = dcapi.getPlatform().getScheduler().run(addon.getAddon(),
                 () -> Bukkit.getOnlinePlayers().forEach(this::checkPlayer), 0, 20);
     }
 
-    public void cancelScheduler() { if (schedulerTask != null) schedulerTask.cancel(); }
+    public void cancelScheduler() {
+        if (schedulerTask != null) schedulerTask.cancel();
+    }
 
     public void checkPlayer(Player player) {
-        if (addon.getConfig().isTurnOffDailyCaseLogic()) return;
+        if (addon.getConfigManager().isTurnOffDailyCaseLogic()) return;
 
         String name = player.getName();
 
@@ -68,16 +70,16 @@ public class DailyCaseService {
             giveGift(name);
             pendingKeys.add(name);
             if (addon.getDatabaseManager().getNotificationStatus(name))
-                player.sendMessage(DCTools.rc(addon.getConfig().getCaseReadyMessage()));
+                player.sendMessage(DCTools.rc(addon.getConfigManager().getCaseReadyMessage()));
         }
     }
 
     public void handleNewPlayerCase(Player player, long now) {
-        if ("case".equalsIgnoreCase(addon.getConfig().getNewPlayerChoice())) {
+        if ("case".equalsIgnoreCase(addon.getConfigManager().getNewPlayerChoice())) {
             giveGift(player.getName());
             pendingKeys.add(player.getName());
             if (addon.getDatabaseManager().getNotificationStatus(player.getName()))
-                player.sendMessage(DCTools.rc(addon.getConfig().getCaseReadyMessage()));
+                player.sendMessage(DCTools.rc(addon.getConfigManager().getCaseReadyMessage()));
         }
 
         nextClaimTimes.put(player.getName(), now + claimCooldown);
@@ -86,7 +88,7 @@ public class DailyCaseService {
     public void giveGift(String player) {
         dcapi.getCaseKeyManager().add(caseName, player, keysAmount).thenAccept(status -> {
             if (status == DatabaseStatus.COMPLETE && debug) {
-                logger.info(addon.getConfig().getLogConsoleGiveKey()
+                logger.info(addon.getConfigManager().getLogConsoleGiveKey()
                         .replace("{key}", String.valueOf(keysAmount))
                         .replace("{player}", player)
                         .replace("{case}", caseName));
@@ -95,7 +97,7 @@ public class DailyCaseService {
             long nextTime = System.currentTimeMillis() + claimCooldown;
             nextClaimTimes.put(player, nextTime);
             addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-                if (addon.getConfig().isDebug())
+                if (addon.getConfigManager().isDebug())
                     logger.info("Player " + player + "'s next claim time saved.");
             });
             giftInProgress.remove(player);
@@ -111,16 +113,16 @@ public class DailyCaseService {
         pendingKeys.remove(playerName);
 
         addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-            if (addon.getConfig().isDebug())
+            if (addon.getConfigManager().isDebug())
                 logger.info("Player " + playerName + "'s timer reset.");
         });
     }
 
     public void reload() {
-        this.claimCooldown = addon.getConfig().getClaimCooldown() * 1000;
-        this.caseName = addon.getConfig().getCaseName();
-        this.keysAmount = addon.getConfig().getKeysAmount();
-        this.debug = addon.getConfig().isDebug();
+        this.claimCooldown = addon.getConfigManager().getClaimCooldown() * 1000;
+        this.caseName = addon.getConfigManager().getCaseName();
+        this.keysAmount = addon.getConfigManager().getKeysAmount();
+        this.debug = addon.getConfigManager().isDebug();
 
         Map<String, Long> lastClaimTimes = addon.getDatabaseManager().loadNextClaimTimes();
         this.nextClaimTimes.clear();
@@ -129,7 +131,7 @@ public class DailyCaseService {
         cancelScheduler();
         startScheduler();
 
-        addon.getLogger().info("DailyCaseService reloaded successfully.");
+        dcapi.getPlatform().getLogger().info("DailyCaseService reloaded successfully.");
     }
 
     public Map<String, Long> getNextClaimTimes() {

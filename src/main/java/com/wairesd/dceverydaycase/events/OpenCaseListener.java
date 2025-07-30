@@ -5,7 +5,7 @@ import com.jodexindustries.donatecase.api.event.player.JoinEvent;
 import com.jodexindustries.donatecase.api.event.player.OpenCaseEvent;
 import com.jodexindustries.donatecase.api.platform.DCPlayer;
 import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
-import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
+import com.wairesd.dceverydaycase.bootstrap.Main;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.entity.Player;
@@ -13,9 +13,9 @@ import org.bukkit.entity.Player;
 public class OpenCaseListener implements Subscriber {
     private final DailyCaseService service;
     private final String targetCaseName;
-    private final DCEveryDayCaseAddon addon;
+    private final Main addon;
 
-    public OpenCaseListener(DailyCaseService service, String targetCaseName, DCEveryDayCaseAddon addon) {
+    public OpenCaseListener(DailyCaseService service, String targetCaseName, Main addon) {
         this.service = service;
         this.targetCaseName = targetCaseName;
         this.addon = addon;
@@ -28,7 +28,7 @@ public class OpenCaseListener implements Subscriber {
 
         if (!event.definition().settings().type().equalsIgnoreCase(targetCaseName)) return;
 
-        addon.getDCAPI().getPlatform().getScheduler().run(addon, () -> {
+        addon.getDCAPI().getPlatform().getScheduler().run(addon.getAddon(), () -> {
             if (service.getDCAPI().getCaseKeyManager().getCache(targetCaseName, player.getName()) == 0)
                 service.resetTimer(player.getName());
         }, 2L);
@@ -38,8 +38,8 @@ public class OpenCaseListener implements Subscriber {
     public void onPlayerJoin(JoinEvent event) {
         DCPlayer dcPlayer = event.player();
         Player player = BukkitUtils.toBukkit(dcPlayer);
-        boolean offLogic = addon.getConfig().isTurnOffDailyCaseLogic();
-        String newPlayerChoice = addon.getConfig().getNewPlayerChoice();
+        boolean offLogic = addon.getConfigManager().isTurnOffDailyCaseLogic();
+        String newPlayerChoice = addon.getConfigManager().getNewPlayerChoice();
 
         if (offLogic && "timer".equalsIgnoreCase(newPlayerChoice)) {
             return;
@@ -50,8 +50,8 @@ public class OpenCaseListener implements Subscriber {
                 service.giveGift(player.getName());
                 service.getNextClaimTimes().put(player.getName(), -1L);
                 addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
-                    if (addon.getConfig().isDebug())
-                        addon.getLogger().info("Next claim times updated in database.");
+                    if (addon.getConfigManager().isDebug())
+                        addon.getDCAPI().getPlatform().getLogger().info("Next claim times updated in database.");
                 });
             }
             return;
@@ -63,8 +63,8 @@ public class OpenCaseListener implements Subscriber {
                 long nextTime = System.currentTimeMillis() + service.getClaimCooldown(); // Timer
                 service.getNextClaimTimes().put(player.getName(), nextTime);
                 addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
-                    if (addon.getConfig().isDebug())
-                        addon.getLogger().info("Next claim times updated in database.");
+                    if (addon.getConfigManager().isDebug())
+                        addon.getDCAPI().getPlatform().getLogger().info("Next claim times updated in database.");
                 });
             }
             return;
@@ -75,8 +75,8 @@ public class OpenCaseListener implements Subscriber {
                 long nextTime = System.currentTimeMillis() + service.getClaimCooldown(); // Timer
                 service.getNextClaimTimes().put(player.getName(), nextTime);
                 addon.getDatabaseManager().asyncSaveNextClaimTimes(service.getNextClaimTimes(), () -> {
-                    if (addon.getConfig().isDebug())
-                        addon.getLogger().info("Next claim times updated in database.");
+                    if (addon.getConfigManager().isDebug())
+                        addon.getDCAPI().getPlatform().getLogger().info("Next claim times updated in database.");
                 });
             }
         }

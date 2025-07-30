@@ -1,6 +1,6 @@
 package com.wairesd.dceverydaycase.config;
 
-import com.wairesd.dceverydaycase.DCEveryDayCaseAddon;
+import com.wairesd.dceverydaycase.bootstrap.Main;
 import com.wairesd.dceverydaycase.config.models.ConfigMetadata;
 import com.wairesd.dceverydaycase.config.models.LanguageMessages;
 import com.wairesd.dceverydaycase.config.models.RootConfig;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class ConfigManager {
-    private final DCEveryDayCaseAddon addon;
+    private final Main addon;
     private final File configFile;
     private final File langDir;
     private final Map<String, YamlConfigurationLoader> languageLoaders = new HashMap<>();
@@ -27,7 +27,7 @@ public class ConfigManager {
     private RootConfig rootConfig;
     private LanguageMessages currentLanguageMessages;
 
-    public ConfigManager(File configFile, DCEveryDayCaseAddon addon) {
+    public ConfigManager(File configFile, Main addon) {
         this.addon = addon;
         this.configFile = configFile;
         this.langDir = new File(configFile.getParentFile(), "lang");
@@ -35,7 +35,7 @@ public class ConfigManager {
     }
 
     public void load() {
-        if (!configFile.exists()) addon.saveResource(configFile.getName(), false);
+        if (!configFile.exists()) addon.getPlugin().saveResource(configFile.getName(), false);
         reload();
     }
 
@@ -59,7 +59,7 @@ public class ConfigManager {
 
             loadCurrentLanguage(rootConfig.dailyCaseSettings.languages);
         } catch (ConfigurateException e) {
-            addon.getLogger().log(Level.WARNING, "Error reloading configuration", e);
+            addon.getDCAPI().getPlatform().getLogger().log(Level.WARNING, "Error reloading configuration", e);
         }
     }
 
@@ -81,7 +81,7 @@ public class ConfigManager {
                     LanguageMessages messages = node.get(LanguageMessages.class, new LanguageMessages());
                     languageNodes.put(lang, messages);
                 } catch (ConfigurateException e) {
-                    addon.getLogger().log(Level.WARNING, "Error loading language file: " + file.getName(), e);
+                    addon.getDCAPI().getPlatform().getLogger().log(Level.WARNING, "Error loading language file: " + file.getName(), e);
                 }
             }
         }
@@ -92,7 +92,7 @@ public class ConfigManager {
             currentLanguageMessages = languageNodes.get(lang);
         } else {
             File langFile = new File(langDir, lang + ".yml");
-            try (InputStream is = addon.getClass().getResourceAsStream("/lang/" + lang + ".yml")) {
+            try (InputStream is = addon.getPlugin().getClass().getResourceAsStream("/lang/" + lang + ".yml")) {
                 if (is != null) {
                     Files.copy(is, langFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
@@ -103,13 +103,13 @@ public class ConfigManager {
                     LanguageMessages messages = node.get(LanguageMessages.class, new LanguageMessages());
                     languageNodes.put(lang, messages);
                     currentLanguageMessages = messages;
-                    addon.getLogger().info("Language " + lang + " loaded from resources and saved to lang folder.");
+                    addon.getDCAPI().getPlatform().getLogger().info("Language " + lang + " loaded from resources and saved to lang folder.");
                 } else {
-                    addon.getLogger().warning("Language " + lang + " not found in plugin resources. Falling back to en_US.");
+                    addon.getDCAPI().getPlatform().getLogger().warning("Language " + lang + " not found in plugin resources. Falling back to en_US.");
                     loadFallbackLanguage();
                 }
             } catch (IOException e) {
-                addon.getLogger().log(Level.WARNING, "Error loading language " + lang + " from resources", e);
+                addon.getDCAPI().getPlatform().getLogger().log(Level.WARNING, "Error loading language " + lang + " from resources", e);
                 loadFallbackLanguage();
             }
         }
@@ -120,7 +120,7 @@ public class ConfigManager {
             currentLanguageMessages = languageNodes.get("en_US");
         } else {
             File enUsFile = new File(langDir, "en_US.yml");
-            try (InputStream is = addon.getClass().getResourceAsStream("/lang/en_US.yml")) {
+            try (InputStream is = addon.getPlugin().getClass().getResourceAsStream("/lang/en_US.yml")) {
                 if (is != null) {
                     Files.copy(is, enUsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
@@ -131,13 +131,13 @@ public class ConfigManager {
                     LanguageMessages enUsMessages = node.get(LanguageMessages.class, new LanguageMessages());
                     languageNodes.put("en_US", enUsMessages);
                     currentLanguageMessages = enUsMessages;
-                    addon.getLogger().info("Fallback language en_US loaded from resources and saved to lang folder.");
+                    addon.getDCAPI().getPlatform().getLogger().info("Fallback language en_US loaded from resources and saved to lang folder.");
                 } else {
-                    addon.getLogger().severe("Default language file en_US.yml not found in plugin resources!");
+                    addon.getDCAPI().getPlatform().getLogger().severe("Default language file en_US.yml not found in plugin resources!");
                     currentLanguageMessages = new LanguageMessages();
                 }
             } catch (IOException e) {
-                addon.getLogger().log(Level.WARNING, "Error loading default language file en_US", e);
+                addon.getDCAPI().getPlatform().getLogger().log(Level.WARNING, "Error loading default language file en_US", e);
                 currentLanguageMessages = new LanguageMessages();
             }
         }
