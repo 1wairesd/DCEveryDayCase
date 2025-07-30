@@ -14,6 +14,8 @@ import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
+import com.wairesd.dceverydaycase.api.DailyCaseApi;
+import com.wairesd.dceverydaycase.api.DailyCaseApiImpl;
 import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -82,6 +84,8 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
 
         logger.info("DCEveryDayCaseAddon included");
 
+        DailyCaseApi.setInstance(new DailyCaseApiImpl(dailyCaseService));
+
         dcapi.getEventBus().register(this);
     }
 
@@ -94,6 +98,8 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
             dbManager.close();
             if (config.isDebug()) logger.info("Database connection is closed");
         });
+
+        DailyCaseApi.setInstance(null);
     }
 
     @Subscribe
