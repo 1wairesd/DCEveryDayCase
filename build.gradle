@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id 'maven-publish'
 }
 
 group = 'com.wairesd.dceverydaycase'
@@ -12,8 +13,14 @@ repositories {
     maven { url = "https://repo.papermc.io/repository/maven-public/" }
     maven { url = "https://oss.sonatype.org/content/groups/public/" }
     maven { url = "https://repo.extendedclip.com/content/repositories/placeholderapi/" }
+    maven {
+        url = uri("https://maven.pkg.github.com/1wairesd/DCEveryDayCase")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
-
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
@@ -21,9 +28,20 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.11.6")
 }
 
-tasks {
-    runServer {
-        minecraftVersion("1.20")
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = project.group
+            artifactId = 'dceverydaycase'
+            version = project.version
+        }
+    }
+    repositories {
+        maven {
+            name = "local"
+            url = uri("$buildDir/repo")
+        }
     }
 }
 
