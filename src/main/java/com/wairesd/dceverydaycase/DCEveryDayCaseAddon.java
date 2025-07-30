@@ -24,7 +24,6 @@ public final class DCEveryDayCaseAddon extends InternalJavaAddon implements Subs
         bootstrap.unload();
     }
 
-    // Main interface implementations
     @Override
     public org.bukkit.plugin.Plugin getPlugin() {
         return com.jodexindustries.donatecase.spigot.tools.BukkitUtils.getDonateCase();
