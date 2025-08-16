@@ -53,8 +53,8 @@ publishing {
             name = "wairesd"
             url = uri("https://repo.jodex.xyz/releases")
             credentials {
-                username = project.findProperty("wairesdUsername") ?: ""
-                password = project.findProperty("wairesdPassword") ?: ""
+                username = findProperty("waiersdRepoUser") as String? ?: System.getenv("WAIRESD_REPO_USER")
+                password = findProperty("waiersdRepoPassword") as String? ?: System.getenv("WAIRESD_REPO_PASSWORD")
             }
             authentication {
                 create("basic", org.gradle.authentication.http.BasicAuthentication)
