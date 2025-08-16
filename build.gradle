@@ -50,14 +50,11 @@ processResources {
 publishing {
     repositories {
         maven {
-            name = "wairesd"
+            name = "Jodex"
             url = uri("https://repo.jodex.xyz/releases")
             credentials {
-                username = findProperty("waiersdRepoUser") ?: System.getenv("WAIRESD_REPO_USER")
-                password = findProperty("waiersdRepoPassword") ?: System.getenv("WAIRESD_REPO_PASSWORD")
-            }
-            authentication {
-                basic(BasicAuthentication)
+                username = findProperty("wairesdRepoUser") ?: System.getenv("WAIRESD_REPO_USER")
+                password = findProperty("wairesdRepoPassword") ?: System.getenv("WAIRESD_REPO_PASSWORD")
             }
         }
     }
@@ -70,3 +67,4 @@ publishing {
         }
     }
 }
+
