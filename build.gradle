@@ -1,4 +1,5 @@
 plugins {
+    id 'maven-publish'
     id 'java'
     id("xyz.jpenilla.run-paper") version "2.3.1"
 }
@@ -43,5 +44,29 @@ processResources {
     filteringCharset 'UTF-8'
     filesMatching('addon.yml') {
         expand props
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "wairesd"
+            url = uri("https://repo.jodex.xyz/releases")
+            credentials {
+                username = project.findProperty("wairesdUsername") ?: ""
+                password = project.findProperty("wairesdPassword") ?: ""
+            }
+            authentication {
+                create("basic", org.gradle.authentication.http.BasicAuthentication)
+            }
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = "com.wairesd.dceverydaycase"
+            artifactId = "api"
+            version = "1.0"
+            from components.java
+        }
     }
 }
