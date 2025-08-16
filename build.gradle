@@ -50,7 +50,7 @@ processResources {
 publishing {
     repositories {
         maven {
-            name = "wairesd"
+            name = "Jodex"
             url = uri("https://repo.jodex.xyz/releases")
             credentials {
                 username = project.findProperty("wairesdUsername") ?: ""
