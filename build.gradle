@@ -53,11 +53,11 @@ publishing {
             name = "wairesd"
             url = uri("https://repo.jodex.xyz/releases")
             credentials {
-                username = findProperty("waiersdRepoUser") as String? ?: System.getenv("WAIRESD_REPO_USER")
-                password = findProperty("waiersdRepoPassword") as String? ?: System.getenv("WAIRESD_REPO_PASSWORD")
+                username = findProperty("waiersdRepoUser") ?: System.getenv("WAIRESD_REPO_USER")
+                password = findProperty("waiersdRepoPassword") ?: System.getenv("WAIRESD_REPO_PASSWORD")
             }
             authentication {
-                create("basic", org.gradle.authentication.http.BasicAuthentication)
+                basic(BasicAuthentication)
             }
         }
     }
@@ -65,7 +65,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = "com.wairesd.dceverydaycase"
             artifactId = "api"
-            version = "1.0"
+            version = "2.0"
             from components.java
         }
     }
