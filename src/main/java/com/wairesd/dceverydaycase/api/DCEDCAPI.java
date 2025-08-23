@@ -2,19 +2,19 @@ package com.wairesd.dceverydaycase.api;
 
 import java.util.Map;
 
-public abstract class DailyCaseApi {
+public abstract class DCEDCAPI {
     private static class Holder {
-        private static DailyCaseApi instance;
+        private static DCEDCAPI instance;
     }
 
-    public static DailyCaseApi getInstance() {
+    public static DCEDCAPI getInstance() {
         if (Holder.instance == null) {
             throw new IllegalStateException("DailyCaseApi is not initialized!");
         }
         return Holder.instance;
     }
 
-    public static void setInstance(DailyCaseApi api) {
+    public static void setInstance(DCEDCAPI api) {
         Holder.instance = api;
     }
 

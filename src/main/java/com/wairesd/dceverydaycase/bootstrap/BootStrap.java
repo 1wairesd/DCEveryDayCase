@@ -13,8 +13,8 @@ import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
-import com.wairesd.dceverydaycase.api.DailyCaseApi;
-import com.wairesd.dceverydaycase.api.DailyCaseApiImpl;
+import com.wairesd.dceverydaycase.api.DCEDCAPI;
+import com.wairesd.dceverydaycase.api.DCEDCAPIImpl;
 import lombok.Getter;
 import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.Bukkit;
@@ -95,7 +95,7 @@ public class BootStrap implements Subscriber {
 
         logger.info("DCEveryDayCaseAddon included");
 
-        DailyCaseApi.setInstance(new DailyCaseApiImpl(dailyCaseService));
+        DCEDCAPI.setInstance(new DCEDCAPIImpl(dailyCaseService));
 
         dcapi.getEventBus().register(this);
     }
@@ -109,7 +109,7 @@ public class BootStrap implements Subscriber {
             if (config.isDebug()) logger.info("Database connection is closed");
         });
 
-        DailyCaseApi.setInstance(null);
+        DCEDCAPI.setInstance(null);
     }
 
     @Subscribe

@@ -3,10 +3,10 @@ package com.wairesd.dceverydaycase.api;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import java.util.Map;
 
-public class DailyCaseApiImpl extends DailyCaseApi {
+public class DCEDCAPIImpl extends DCEDCAPI {
     private final DailyCaseService service;
 
-    public DailyCaseApiImpl(DailyCaseService service) {
+    public DCEDCAPIImpl(DailyCaseService service) {
         this.service = service;
     }
 
