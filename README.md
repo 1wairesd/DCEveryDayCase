@@ -21,6 +21,7 @@ Spigot plugin - [DCEveryDayCase](https://www.spigotmc.org/resources/dceverydayca
 > Gradle
 ```groovy
 maven {
+    name "JodexIndustries"
     url = ("https://repo.jodex.xyz/releases")
 }
 ```
