@@ -25,5 +25,5 @@ maven {
 }
 ```
 ```groovy
-compileOnly("om.wairesd.dceverydaycase:api:2.0")
+compileOnly("com.wairesd.dceverydaycase:api:2.0")
 ```
