@@ -15,6 +15,7 @@ Spigot plugin - [DCEveryDayCase](https://www.spigotmc.org/resources/dceverydayca
     <groupId>com.wairesd.dceverydaycase</groupId>
     <artifactId>api</artifactId>
     <version>2.0</version>
+    <scope>provided</scope>
 </dependency>
 ```
 > Gradle
@@ -24,5 +25,5 @@ maven {
 }
 ```
 ```groovy
-compileOnly("om.wairesd.dceverydaycase:api:2.0")
+compileOnly("com.wairesd.dceverydaycase:api:2.0")
 ```
