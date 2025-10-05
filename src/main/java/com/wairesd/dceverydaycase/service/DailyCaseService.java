@@ -86,27 +86,31 @@ public class DailyCaseService {
     }
 
     public void giveGift(String player) {
-        dcapi.getCaseKeyManager().add(caseName, player, keysAmount).thenAccept(status -> {
-            if (status == DatabaseStatus.COMPLETE && debug) {
-                logger.info(addon.getConfigManager().getLogConsoleGiveKey()
-                        .replace("{key}", String.valueOf(keysAmount))
-                        .replace("{player}", player)
-                        .replace("{case}", caseName));
-            }
+        dcapi.getCaseKeyManager().add(caseName, player, keysAmount)
+                .toCompletableFuture()
+                .thenAccept(status -> {
+                    if (status == DatabaseStatus.COMPLETE && debug) {
+                        logger.info(addon.getConfigManager().getLogConsoleGiveKey()
+                                .replace("{key}", String.valueOf(keysAmount))
+                                .replace("{player}", player)
+                                .replace("{case}", caseName));
+                    }
 
-            long nextTime = System.currentTimeMillis() + claimCooldown;
-            nextClaimTimes.put(player, nextTime);
-            addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-                if (addon.getConfigManager().isDebug())
-                    logger.info("Player " + player + "'s next claim time saved.");
-            });
-            giftInProgress.remove(player);
-        }).exceptionally(ex -> {
-            logger.log(Level.SEVERE, "Error giving gift to " + player, ex);
-            giftInProgress.remove(player);
-            return null;
-        });
+                    long nextTime = System.currentTimeMillis() + claimCooldown;
+                    nextClaimTimes.put(player, nextTime);
+                    addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
+                        if (addon.getConfigManager().isDebug())
+                            logger.info("Player " + player + "'s next claim time saved.");
+                    });
+                    giftInProgress.remove(player);
+                })
+                .exceptionally(ex -> {
+                    logger.log(Level.SEVERE, "Error giving gift to " + player, ex);
+                    giftInProgress.remove(player);
+                    return null;
+                });
     }
+
 
     public void resetTimer(String playerName) {
         nextClaimTimes.put(playerName, System.currentTimeMillis() + claimCooldown);
