@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     compileOnly "org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT"
-    compileOnly "com.jodexindustries.donatecase:spigot-api:2.1.0.5"
+    compileOnly "com.jodexindustries.donatecase:spigot-api:2.1.0.7"
     compileOnly "me.clip:placeholderapi:2.11.6"
 
     compileOnly 'org.projectlombok:lombok:1.18.30'

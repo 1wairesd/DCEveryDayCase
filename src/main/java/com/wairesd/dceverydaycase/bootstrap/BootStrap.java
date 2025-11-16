@@ -103,7 +103,7 @@ public class BootStrap implements Subscriber {
     public void unload() {
         logger.info("Disconnect DCEveryDayCaseAddon...");
         dailyCaseService.cancelScheduler();
-        if (saveTask != null) dcapi.getPlatform().getScheduler().cancel(saveTask.getTaskId());
+        if (saveTask != null) dcapi.getPlatform().getScheduler().cancel(saveTask.getTaskId(), false);
         dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
             dbManager.close();
             if (config.isDebug()) logger.info("Database connection is closed");
