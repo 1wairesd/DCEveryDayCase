@@ -37,11 +37,12 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         }
 
         if (!"remaining_time".equalsIgnoreCase(params)) {
-            return "";
+            return null; // Возвращаем null для неизвестных плейсхолдеров (стандарт PAPI)
         }
 
         if (player == null || plugin.getDailyCaseService() == null || plugin.getDCAPI() == null) {
-            return plugin.getConfigManager().getInfoPlaceholder();
+            String info = plugin.getConfigManager().getInfoPlaceholder();
+            return info != null ? info : "";
         }
 
         DailyCaseService service = plugin.getDailyCaseService();
@@ -50,13 +51,20 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         int keys = dcapi.getCaseKeyManager().getCache(service.getCaseName(), player.getName());
 
         if (keys > 0) {
-            return plugin.getConfigManager().getAvailable();
+            String available = plugin.getConfigManager().getAvailable();
+            return available != null ? available : "";
         }
 
         long nextClaim = service.getNextClaimTimes().computeIfAbsent(player.getName(),
                 n -> now + service.getClaimCooldown());
-        return now >= nextClaim ? plugin.getConfigManager().getAvailable()
-                : formatTime(plugin.getConfigManager().getRemaining(), nextClaim - now);
+        
+        if (now >= nextClaim) {
+            String available = plugin.getConfigManager().getAvailable();
+            return available != null ? available : "";
+        } else {
+            String remaining = plugin.getConfigManager().getRemaining();
+            return remaining != null ? formatTime(remaining, nextClaim - now) : "";
+        }
     }
 
     private String formatTime(String template, long millis) {

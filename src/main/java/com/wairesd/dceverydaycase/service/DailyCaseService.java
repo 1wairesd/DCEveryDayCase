@@ -75,14 +75,18 @@ public class DailyCaseService {
     }
 
     public void handleNewPlayerCase(Player player, long now) {
+        String name = player.getName();
+        
+        long nextTime = now + claimCooldown;
+        nextClaimTimes.put(name, nextTime);
+        
         if ("case".equalsIgnoreCase(addon.getConfigManager().getNewPlayerChoice())) {
-            giveGift(player.getName());
-            pendingKeys.add(player.getName());
-            if (addon.getDatabaseManager().getNotificationStatus(player.getName()))
+            giftInProgress.put(name, true);
+            giveGift(name);
+            pendingKeys.add(name);
+            if (addon.getDatabaseManager().getNotificationStatus(name))
                 player.sendMessage(DCTools.rc(addon.getConfigManager().getCaseReadyMessage()));
         }
-
-        nextClaimTimes.put(player.getName(), now + claimCooldown);
     }
 
     public void giveGift(String player) {
