@@ -4,11 +4,11 @@ plugins {
 }
 
 group = 'com.wairesd.dceverydaycase'
-version = '2.1'
+version = '2.2'
 
 repositories {
     mavenCentral()
-    maven { url = "https://repo.jodex.xyz/releases" }
+    maven { url = "https://jitpack.io" }
     maven { url = "https://repo.papermc.io/repository/maven-public/" }
     maven { url = "https://oss.sonatype.org/content/groups/public/" }
     maven { url = "https://repo.extendedclip.com/content/repositories/placeholderapi/" }
@@ -16,7 +16,8 @@ repositories {
 
 dependencies {
     compileOnly "org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT"
-    compileOnly "com.jodexindustries.donatecase:spigot-api:2.1.0.7"
+    compileOnly "com.github.Jodexx.DonateCase:api:v2.2.9.9"
+    compileOnly "com.github.Jodexx.DonateCase:spigot-api:v2.2.9.9"
     compileOnly "me.clip:placeholderapi:2.11.6"
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
