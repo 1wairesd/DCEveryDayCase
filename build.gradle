@@ -31,19 +31,12 @@ java {
 }
 
 publishing {
-    repositories {
-        maven {
-            name = "Jodex"
-            url = uri("https://repo.jodex.xyz/releases")
-            credentials {
-                username = findProperty("wairesdRepoUser") ?: System.getenv("WAIRESD_REPO_USER")
-                password = findProperty("wairesdRepoPassword") ?: System.getenv("WAIRESD_REPO_PASSWORD")
-            }
-        }
-    }
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            groupId = 'com.wairesd.dceverydaycase'
+            artifactId = 'api'
+            version = project.version
         }
     }
 }
