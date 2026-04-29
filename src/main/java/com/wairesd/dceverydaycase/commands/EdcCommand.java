@@ -29,6 +29,7 @@ public class EdcCommand implements SubCommandExecutor, SubCommandTabCompleter {
 
         boolean newStatus = !addon.getDatabaseManager().getNotificationStatus(sender.getName());
         addon.getDatabaseManager().setNotificationStatus(sender.getName(), newStatus);
+        addon.getDailyCaseService().invalidateNotificationCache(sender.getName());
         String msg = newStatus ? addon.getConfigManager().getCaseGrantedOn() : addon.getConfigManager().getCaseGrantedOff();
         sender.sendMessage(DCTools.rc(msg));
         return true;

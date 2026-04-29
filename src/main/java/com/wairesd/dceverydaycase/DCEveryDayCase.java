@@ -1,4 +1,4 @@
-package com.wairesd.dceverydaycase.bootstrap;
+package com.wairesd.dceverydaycase;
 
 import com.jodexindustries.donatecase.api.DCAPI;
 import com.jodexindustries.donatecase.api.data.subcommand.SubCommand;
@@ -6,39 +6,36 @@ import com.jodexindustries.donatecase.api.data.subcommand.SubCommandType;
 import com.jodexindustries.donatecase.api.event.Subscriber;
 import com.jodexindustries.donatecase.api.event.plugin.DonateCaseReloadEvent;
 import com.jodexindustries.donatecase.api.scheduler.SchedulerTask;
-import com.jodexindustries.donatecase.spigot.tools.BukkitUtils;
+import com.wairesd.dceverydaycase.api.DCEDCAPI;
+import com.wairesd.dceverydaycase.api.DCEDCAPIImpl;
+import com.wairesd.dceverydaycase.bootstrap.Main;
 import com.wairesd.dceverydaycase.commands.EdcCommand;
 import com.wairesd.dceverydaycase.config.ConfigManager;
 import com.wairesd.dceverydaycase.db.DatabaseManager;
 import com.wairesd.dceverydaycase.events.OpenCaseListener;
 import com.wairesd.dceverydaycase.service.DailyCaseService;
 import com.wairesd.dceverydaycase.tools.DCEveryDayCaseExpansion;
-import com.wairesd.dceverydaycase.api.DCEDCAPI;
-import com.wairesd.dceverydaycase.api.DCEDCAPIImpl;
 import lombok.Getter;
 import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.Map;
 import java.util.logging.Logger;
 
 @Getter
-public class BootStrap implements Subscriber {
+public class DCEveryDayCase implements Subscriber {
     private final Main plugin;
     private boolean isPlaceholderRegistered = false;
     private final DCAPI dcapi = DCAPI.getInstance();
     private final ConfigManager config;
     private DatabaseManager dbManager;
     private DailyCaseService dailyCaseService;
-    private final Plugin donateCasePlugin;
     private final Logger logger;
     private SchedulerTask saveTask;
 
-    public BootStrap(Main plugin) {
+    public DCEveryDayCase(Main plugin) {
         this.plugin = plugin;
-        this.donateCasePlugin = BukkitUtils.getDonateCase();
         this.logger = plugin.getPlugin().getLogger();
         this.config = new ConfigManager(new File(plugin.getPlugin().getDataFolder(), "config.yml"), plugin);
     }
@@ -125,7 +122,7 @@ public class BootStrap implements Subscriber {
         if (config.isTurnOffDailyCaseLogic()) {
             unregisterPlaceholder();
         } else {
-            updatePlaceholder();
+            registerPlaceholder();
         }
     }
 
@@ -155,15 +152,6 @@ public class BootStrap implements Subscriber {
             } else {
                 logger.warning("It was not possible to delete the extension of Placeholder.");
             }
-        }
-    }
-
-    private void updatePlaceholder() {
-        boolean offLogic = config.isTurnOffDailyCaseLogic();
-        if (offLogic) {
-            unregisterPlaceholder();
-        } else {
-            registerPlaceholder();
         }
     }
 

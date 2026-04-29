@@ -1,27 +1,27 @@
 package com.wairesd.dceverydaycase.bootstrap;
 
 import com.jodexindustries.donatecase.api.DCAPI;
-import com.jodexindustries.donatecase.api.manager.CaseManager;
+import com.jodexindustries.donatecase.api.addon.Addon;
+import com.wairesd.dceverydaycase.DCEveryDayCase;
+import com.wairesd.dceverydaycase.config.ConfigManager;
+import com.wairesd.dceverydaycase.db.DatabaseManager;
+import com.wairesd.dceverydaycase.service.DailyCaseService;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MainPlugin extends JavaPlugin implements Main {
-    private BootStrap bootstrap;
-    private CaseManager caseManager;
+    private DCEveryDayCase core;
 
     @Override
     public void onEnable() {
-        caseManager = DCAPI.getInstance().getCaseManager();
-        bootstrap = new BootStrap(this);
-        bootstrap.load();
-        bootstrap.enable();
+        core = new DCEveryDayCase(this);
+        core.load();
+        core.enable();
     }
 
     @Override
     public void onDisable() {
-        if (bootstrap != null) {
-            bootstrap.unload();
-        }
+        if (core != null) core.unload();
     }
 
     @Override
@@ -30,42 +30,27 @@ public class MainPlugin extends JavaPlugin implements Main {
     }
 
     @Override
-    public CaseManager getCaseManager() {
-        return caseManager;
+    public ConfigManager getConfigManager() {
+        return core.getConfig();
     }
 
     @Override
-    public Plugin getPluginInstance() {
-        return this;
+    public DatabaseManager getDatabaseManager() {
+        return core.getDatabaseManager();
     }
 
     @Override
-    public com.wairesd.dceverydaycase.config.ConfigManager getConfigManager() {
-        return bootstrap.getConfig();
-    }
-
-    @Override
-    public com.wairesd.dceverydaycase.db.DatabaseManager getDatabaseManager() {
-        return bootstrap.getDatabaseManager();
-    }
-
-    @Override
-    public com.jodexindustries.donatecase.api.DCAPI getDCAPI() {
+    public DCAPI getDCAPI() {
         return DCAPI.getInstance();
     }
 
     @Override
-    public com.jodexindustries.donatecase.api.addon.Addon getAddon() {
+    public Addon getAddon() {
         return null;
     }
 
     @Override
-    public com.wairesd.dceverydaycase.service.DailyCaseService getDailyCaseService() {
-        return bootstrap.getDailyCaseService();
-    }
-
-    @Override
-    public java.util.logging.Logger getLogger() {
-        return super.getLogger();
+    public DailyCaseService getDailyCaseService() {
+        return core.getDailyCaseService();
     }
 }

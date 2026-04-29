@@ -7,9 +7,8 @@ import com.jodexindustries.donatecase.api.tools.DCTools;
 import com.wairesd.dceverydaycase.bootstrap.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +17,7 @@ import java.util.logging.Logger;
 
 public class DailyCaseService {
     private final Map<String, Boolean> giftInProgress = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> notificationCache = new ConcurrentHashMap<>();
     private final Main addon;
     private final DCAPI dcapi;
     private final Map<String, Long> nextClaimTimes;
@@ -26,7 +26,7 @@ public class DailyCaseService {
     private int keysAmount;
     private boolean debug;
     private SchedulerTask schedulerTask;
-    public final Set<String> pendingKeys = new HashSet<>();
+    public final Set<String> pendingKeys = ConcurrentHashMap.newKeySet();
     private final Logger logger;
 
     public DailyCaseService(Main addon, DCAPI dcapi, Map<String, Long> nextClaimTimes,
@@ -66,10 +66,13 @@ public class DailyCaseService {
         }
 
         if (now >= nextClaimTimes.get(name)) {
-            giftInProgress.put(name, true);
+            // Атомарно выставляем флаг — если уже true, выходим (защита от race condition)
+            if (giftInProgress.putIfAbsent(name, true) != null) return;
+            // Сразу обновляем время в памяти, чтобы следующий тик не прошёл проверку
+            nextClaimTimes.put(name, now + claimCooldown);
             giveGift(name);
             pendingKeys.add(name);
-            if (addon.getDatabaseManager().getNotificationStatus(name))
+            if (isNotificationsEnabled(name))
                 player.sendMessage(DCTools.rc(addon.getConfigManager().getCaseReadyMessage()));
         }
     }
@@ -81,12 +84,21 @@ public class DailyCaseService {
         nextClaimTimes.put(name, nextTime);
         
         if ("case".equalsIgnoreCase(addon.getConfigManager().getNewPlayerChoice())) {
-            giftInProgress.put(name, true);
+            if (giftInProgress.putIfAbsent(name, true) != null) return;
             giveGift(name);
             pendingKeys.add(name);
-            if (addon.getDatabaseManager().getNotificationStatus(name))
+            if (isNotificationsEnabled(name))
                 player.sendMessage(DCTools.rc(addon.getConfigManager().getCaseReadyMessage()));
         }
+    }
+
+    public boolean isNotificationsEnabled(String name) {
+        return notificationCache.computeIfAbsent(name,
+                n -> addon.getDatabaseManager().getNotificationStatus(n));
+    }
+
+    public void invalidateNotificationCache(String name) {
+        notificationCache.remove(name);
     }
 
     public void giveGift(String player) {
@@ -100,8 +112,6 @@ public class DailyCaseService {
                                 .replace("{case}", caseName));
                     }
 
-                    long nextTime = System.currentTimeMillis() + claimCooldown;
-                    nextClaimTimes.put(player, nextTime);
                     addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
                         if (addon.getConfigManager().isDebug())
                             logger.info("Player " + player + "'s next claim time saved.");
@@ -148,10 +158,6 @@ public class DailyCaseService {
 
     public long getClaimCooldown() {
         return claimCooldown;
-    }
-
-    public Plugin getPlugin() {
-        return addon.getPluginInstance();
     }
 
     public DCAPI getDCAPI() {

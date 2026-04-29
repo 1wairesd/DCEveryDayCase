@@ -55,8 +55,8 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
             return available != null ? available : "";
         }
 
-        long nextClaim = service.getNextClaimTimes().computeIfAbsent(player.getName(),
-                n -> now + service.getClaimCooldown());
+        long nextClaim = service.getNextClaimTimes().getOrDefault(player.getName(),
+                now + service.getClaimCooldown());
         
         if (now >= nextClaim) {
             String available = plugin.getConfigManager().getAvailable();
