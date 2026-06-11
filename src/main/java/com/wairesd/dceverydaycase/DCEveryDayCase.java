@@ -33,6 +33,7 @@ public class DCEveryDayCase implements Subscriber {
     private DailyCaseService dailyCaseService;
     private final Logger logger;
     private SchedulerTask saveTask;
+    private OpenCaseListener openCaseListener;
 
     public DCEveryDayCase(Main plugin) {
         this.plugin = plugin;
@@ -59,7 +60,8 @@ public class DCEveryDayCase implements Subscriber {
         }
 
         logger.info("Launch DCEveryDayCaseAddon...");
-        dcapi.getEventBus().register(new OpenCaseListener(dailyCaseService, config.getCaseName(), plugin));
+        openCaseListener = new OpenCaseListener(dailyCaseService, config.getCaseName(), plugin);
+        dcapi.getEventBus().register(openCaseListener);
 
         EdcCommand executor = new EdcCommand(plugin);
         if (plugin.getAddon() != null) {
@@ -99,13 +101,14 @@ public class DCEveryDayCase implements Subscriber {
 
     public void unload() {
         logger.info("Disconnect DCEveryDayCaseAddon...");
+        if (openCaseListener != null) dcapi.getEventBus().unregister(openCaseListener);
+        dcapi.getEventBus().unregister(this);
         dailyCaseService.cancelScheduler();
         if (saveTask != null) saveTask.cancel();
         dbManager.asyncSaveNextClaimTimes(dailyCaseService.getNextClaimTimes(), () -> {
             dbManager.close();
             if (config.isDebug()) logger.info("Database connection is closed");
         });
-
         DCEDCAPI.setInstance(null);
     }
 
@@ -166,5 +169,4 @@ public class DCEveryDayCase implements Subscriber {
     public DailyCaseService getDailyCaseService() {
         return dailyCaseService;
     }
-
 }

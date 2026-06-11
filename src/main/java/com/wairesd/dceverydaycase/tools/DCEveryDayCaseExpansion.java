@@ -37,7 +37,7 @@ public class DCEveryDayCaseExpansion extends PlaceholderExpansion {
         }
 
         if (!"remaining_time".equalsIgnoreCase(params)) {
-            return null; // Возвращаем null для неизвестных плейсхолдеров (стандарт PAPI)
+            return null;
         }
 
         if (player == null || plugin.getDailyCaseService() == null || plugin.getDCAPI() == null) {

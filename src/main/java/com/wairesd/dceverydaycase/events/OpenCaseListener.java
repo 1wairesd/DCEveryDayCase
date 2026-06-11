@@ -1,6 +1,7 @@
 package com.wairesd.dceverydaycase.events;
 
 import com.jodexindustries.donatecase.api.event.Subscriber;
+import com.jodexindustries.donatecase.api.event.animation.AnimationEndEvent;
 import com.jodexindustries.donatecase.api.event.player.JoinEvent;
 import com.jodexindustries.donatecase.api.event.player.OpenCaseEvent;
 import com.jodexindustries.donatecase.api.platform.DCPlayer;
@@ -10,10 +11,14 @@ import com.wairesd.dceverydaycase.service.DailyCaseService;
 import net.kyori.event.method.annotation.Subscribe;
 import org.bukkit.entity.Player;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class OpenCaseListener implements Subscriber {
     private final DailyCaseService service;
     private final String targetCaseName;
     private final Main addon;
+    private final Set<String> resetByAnimation = ConcurrentHashMap.newKeySet();
 
     public OpenCaseListener(DailyCaseService service, String targetCaseName, Main addon) {
         this.service = service;
@@ -22,16 +27,25 @@ public class OpenCaseListener implements Subscriber {
     }
 
     @Subscribe
-    public void onCaseOpen(OpenCaseEvent event) {
-        DCPlayer dcPlayer = event.player();
-        Player player = BukkitUtils.toBukkit(dcPlayer);
+    public void onAnimationEnd(AnimationEndEvent event) {
+        if (!event.activeCase().caseType().equalsIgnoreCase(targetCaseName)) return;
 
+        String playerName = event.activeCase().player().getName();
+        resetByAnimation.add(playerName);
+        service.resetTimer(playerName);
+    }
+
+    @Subscribe
+    public void onCaseOpen(OpenCaseEvent event) {
         if (!event.definition().settings().type().equalsIgnoreCase(targetCaseName)) return;
 
-        addon.getDCAPI().getPlatform().getScheduler().run(addon.getAddon(), () -> {
-            if (service.getDCAPI().getCaseKeyManager().getCache(targetCaseName, player.getName()) == 0)
-                service.resetTimer(player.getName());
-        }, 2L);
+        DCPlayer dcPlayer = event.player();
+        Player player = BukkitUtils.toBukkit(dcPlayer);
+        String playerName = player.getName();
+
+        if (resetByAnimation.remove(playerName)) return; 
+
+        service.resetTimer(playerName);
     }
 
     @Subscribe

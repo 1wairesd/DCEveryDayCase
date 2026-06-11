@@ -8,7 +8,6 @@ import com.wairesd.dceverydaycase.bootstrap.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,10 +64,9 @@ public class DailyCaseService {
             return;
         }
 
-        if (now >= nextClaimTimes.get(name)) {
-            // Атомарно выставляем флаг — если уже true, выходим (защита от race condition)
+        long nextClaim = nextClaimTimes.get(name);
+        if (now >= nextClaim) {
             if (giftInProgress.putIfAbsent(name, true) != null) return;
-            // Сразу обновляем время в памяти, чтобы следующий тик не прошёл проверку
             nextClaimTimes.put(name, now + claimCooldown);
             giveGift(name);
             pendingKeys.add(name);
@@ -79,10 +77,9 @@ public class DailyCaseService {
 
     public void handleNewPlayerCase(Player player, long now) {
         String name = player.getName();
-        
-        long nextTime = now + claimCooldown;
-        nextClaimTimes.put(name, nextTime);
-        
+
+        nextClaimTimes.put(name, now + claimCooldown);
+
         if ("case".equalsIgnoreCase(addon.getConfigManager().getNewPlayerChoice())) {
             if (giftInProgress.putIfAbsent(name, true) != null) return;
             giveGift(name);
@@ -111,10 +108,8 @@ public class DailyCaseService {
                                 .replace("{player}", player)
                                 .replace("{case}", caseName));
                     }
-
                     addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-                        if (addon.getConfigManager().isDebug())
-                            logger.info("Player " + player + "'s next claim time saved.");
+                        if (debug) logger.info("Player " + player + "'s next claim time saved.");
                     });
                     giftInProgress.remove(player);
                 })
@@ -125,14 +120,11 @@ public class DailyCaseService {
                 });
     }
 
-
     public void resetTimer(String playerName) {
         nextClaimTimes.put(playerName, System.currentTimeMillis() + claimCooldown);
         pendingKeys.remove(playerName);
-
         addon.getDatabaseManager().asyncSaveNextClaimTimes(nextClaimTimes, () -> {
-            if (addon.getConfigManager().isDebug())
-                logger.info("Player " + playerName + "'s timer reset.");
+            if (debug) logger.info("Player " + playerName + "'s timer reset.");
         });
     }
 
